@@ -16,4 +16,9 @@ public class Node{
     public int getPort() {
         return port;
     }
+
+    @Override
+    public String toString() {
+        return hostname + ":" + port;
+    }
 }
