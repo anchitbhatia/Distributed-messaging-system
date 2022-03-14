@@ -1,30 +1,32 @@
 package nodes;
 
+import com.google.protobuf.ByteString;
+import messages.ProducerMessage;
+
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.Socket;
 
-public class Producer extends Node{
-    private Node brokerNode;
-    private DataOutputStream outputStream;
+public class Producer{
+    private final DataOutputStream outputStream;
+    private final Socket broker;
 
-    public Producer(String hostname, int port, Node brokerNode) {
-        super(hostname, port);
-        this.brokerNode = brokerNode;
+    public Producer(Node brokerNode) throws ConnectionException {
         try {
-            this.initiateConnection();
+            Socket broker = new Socket(brokerNode.getHostname(), brokerNode.getPort());
+            this.broker = broker;
+            this.outputStream = new DataOutputStream(broker.getOutputStream());
         } catch (IOException e) {
-            e.printStackTrace();
-            return;
+            throw new ConnectionException("Unable to establish connection to broker " + brokerNode);
         }
     }
 
-    private void initiateConnection() throws IOException {
-        Socket broker = new Socket(brokerNode.getHostname(), brokerNode.getPort());
-        this.outputStream = new DataOutputStream(broker.getOutputStream());
+    public void send(String topic, byte[] data) throws IOException {
+        ProducerMessage.Message msg = ProducerMessage.Message.newBuilder().setTopic(topic).setData(ByteString.copyFrom(data)).build();
+        this.outputStream.write(msg.toByteArray());
     }
 
-    public void publish(String topic, byte[] data){
-        
+    public void close() throws IOException {
+        broker.close();
     }
 }
