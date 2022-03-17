@@ -1,5 +1,6 @@
 package api;
 
+import utils.Node;
 import messages.ConsumerRecord;
 import messages.Request;
 import utils.ConnectionException;

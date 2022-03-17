@@ -1,6 +1,6 @@
 package configs;
 
-import api.Node;
+import utils.Node;
 
 public class BrokerConfig {
     private Node host;

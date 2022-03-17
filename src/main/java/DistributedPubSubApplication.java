@@ -1,6 +1,6 @@
 import api.BrokerApi;
 import utils.ConnectionException;
-import api.Node;
+import utils.Node;
 import api.ProducerApi;
 import configs.ApplicationConfig;
 import configs.BrokerConfig;
