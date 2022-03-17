@@ -1,0 +1,10 @@
+syntax = "proto3";
+
+package messages;
+
+option java_outer_classname = "Request";
+
+message ConsumerRequest{
+  string topic = 1;
+  uint64 offset = 2;
+}

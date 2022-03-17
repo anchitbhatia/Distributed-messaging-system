@@ -2,9 +2,9 @@ syntax = "proto3";
 
 package messages;
 
-option java_outer_classname = "ProducerMessage";
+option java_outer_classname = "ProducerRecord";
 
-message Message{
+message ProducerMessage{
   string topic = 1;
   bytes data = 2;
 }
