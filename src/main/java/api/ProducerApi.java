@@ -3,6 +3,7 @@ package api;
 import com.google.protobuf.Any;
 import com.google.protobuf.ByteString;
 import messages.ProducerRecord;
+import utils.ConnectionException;
 
 import java.io.DataOutputStream;
 import java.io.IOException;

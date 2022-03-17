@@ -2,6 +2,7 @@ package api;
 
 import messages.ConsumerRecord;
 import messages.Request;
+import utils.ConnectionException;
 import utils.Constants;
 
 import java.io.DataInputStream;

@@ -1,4 +1,4 @@
-package utils;
+package configs;
 
 public class ApplicationConfig {
     private final String type;

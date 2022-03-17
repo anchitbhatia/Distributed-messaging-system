@@ -1,7 +1,10 @@
 import api.BrokerApi;
-import api.ConnectionException;
+import utils.ConnectionException;
 import api.Node;
 import api.ProducerApi;
+import configs.ApplicationConfig;
+import configs.BrokerConfig;
+import configs.ProducerConfig;
 import utils.*;
 
 import java.io.BufferedReader;
