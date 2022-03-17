@@ -1,7 +1,8 @@
-package nodes;
+package api;
 
+import com.google.protobuf.Any;
 import com.google.protobuf.ByteString;
-import messages.ProducerMessage;
+import messages.ProducerRecord;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -13,7 +14,7 @@ public class Producer{
 
     public Producer(Node brokerNode) throws ConnectionException {
         try {
-            Socket broker = new Socket(brokerNode.getHostname(), brokerNode.getPort());
+            Socket broker = new Socket(brokerNode.getHostName(), brokerNode.getPort());
             this.broker = broker;
             this.outputStream = new DataOutputStream(broker.getOutputStream());
         } catch (IOException e) {
@@ -22,8 +23,10 @@ public class Producer{
     }
 
     public void send(String topic, byte[] data) throws IOException {
-        ProducerMessage.Message msg = ProducerMessage.Message.newBuilder().setTopic(topic).setData(ByteString.copyFrom(data)).build();
-        this.outputStream.write(msg.toByteArray());
+        System.out.println("\nSending to broker, Topic: " + topic);
+        ProducerRecord.ProducerMessage msg = ProducerRecord.ProducerMessage.newBuilder().setTopic(topic).setData(ByteString.copyFrom(data)).build();
+        Any packet = Any.pack(msg);
+        this.outputStream.write(packet.toByteArray());
     }
 
     public void close() throws IOException {

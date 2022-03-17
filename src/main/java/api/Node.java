@@ -1,16 +1,16 @@
 package nodes;
 
 public class Node{
-    private final String hostname;
+    private final String hostName;
     private final int port;
 
-    public Node(String hostname, int port) {
-        this.hostname = hostname;
+    public Node(String hostName, int port) {
+        this.hostName = hostName;
         this.port = port;
     }
 
-    public String getHostname() {
-        return hostname;
+    public String getHostName() {
+        return hostName;
     }
 
     public int getPort() {
@@ -19,6 +19,6 @@ public class Node{
 
     @Override
     public String toString() {
-        return hostname + ":" + port;
+        return hostName + ":" + port;
     }
 }
