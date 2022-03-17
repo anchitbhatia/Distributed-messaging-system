@@ -10,7 +10,7 @@ import java.io.IOException;
 import java.net.Socket;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
-public class Consumer {
+public class ConsumerApi {
     private final DataInputStream inputStream;
     private final DataOutputStream outputStream;
     private final Socket broker;
@@ -19,7 +19,7 @@ public class Consumer {
     private final Thread fetchingThread;
     private final ConcurrentLinkedQueue<byte[]> queue;
 
-    public Consumer(Node brokerNode, String topic, int startPosition) throws ConnectionException {
+    public ConsumerApi(Node brokerNode, String topic, int startPosition) throws ConnectionException {
         try {
             Socket broker = new Socket(brokerNode.getHostName(), brokerNode.getPort());
             this.broker = broker;

@@ -1,4 +1,4 @@
-package nodes;
+package api;
 
 public class Node{
     private final String hostName;

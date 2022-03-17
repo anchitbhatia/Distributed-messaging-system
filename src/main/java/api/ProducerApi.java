@@ -8,11 +8,11 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.Socket;
 
-public class Producer{
+public class ProducerApi {
     private final DataOutputStream outputStream;
     private final Socket broker;
 
-    public Producer(Node brokerNode) throws ConnectionException {
+    public ProducerApi(Node brokerNode) throws ConnectionException {
         try {
             Socket broker = new Socket(brokerNode.getHostName(), brokerNode.getPort());
             this.broker = broker;
@@ -23,13 +23,14 @@ public class Producer{
     }
 
     public void send(String topic, byte[] data) throws IOException {
-        System.out.println("\nSending to broker, Topic: " + topic);
+        System.out.println("\nPublisher: Publishing Topic: " + topic + ", Length: " + data.length);
         ProducerRecord.ProducerMessage msg = ProducerRecord.ProducerMessage.newBuilder().setTopic(topic).setData(ByteString.copyFrom(data)).build();
         Any packet = Any.pack(msg);
         this.outputStream.write(packet.toByteArray());
     }
 
     public void close() throws IOException {
+        System.out.println("\nPublisher: Closing connection to broker at " + broker.getPort());
         broker.close();
     }
 }
