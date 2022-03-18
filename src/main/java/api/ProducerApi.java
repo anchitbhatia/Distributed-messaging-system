@@ -25,14 +25,14 @@ public class ProducerApi {
     }
 
     public void send(String topic, byte[] data) throws IOException {
-        System.out.println("\nPublisher: Publishing Topic: " + topic + ", Length: " + data.length);
+        System.out.println("\nPublisher: publishing Topic: " + topic + ", Length: " + data.length);
         ProducerRecord.ProducerMessage msg = ProducerRecord.ProducerMessage.newBuilder().setTopic(topic).setData(ByteString.copyFrom(data)).build();
         Any packet = Any.pack(msg);
         this.outputStream.write(packet.toByteArray());
     }
 
     public void close() throws IOException {
-        System.out.println("\nPublisher: Closing connection to broker at " + broker.getPort());
+        System.out.println("\nPublisher: closing connection to broker at " + broker.getPort());
         broker.close();
     }
 }
