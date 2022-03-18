@@ -1,4 +1,7 @@
 import api.BrokerApi;
+import api.ConsumerApi;
+import com.google.protobuf.ByteString;
+import configs.ConsumerConfig;
 import utils.ConnectionException;
 import utils.Node;
 import api.ProducerApi;
@@ -7,9 +10,7 @@ import configs.BrokerConfig;
 import configs.ProducerConfig;
 import utils.*;
 
-import java.io.BufferedReader;
-import java.io.FileReader;
-import java.io.IOException;
+import java.io.*;
 
 public class DistributedPubSubApplication {
 
@@ -23,15 +24,15 @@ public class DistributedPubSubApplication {
                 String line;
                 Thread.sleep(3000);
                 while ((line = br.readLine()) != null) {
-                    System.out.println("\nApplicationConfig: Publishing, data: " + line);
+                    System.out.println("\nApplication: Publishing, data: " + line);
                     producer.send(topic, line.getBytes());
-                    Thread.sleep(1000);
+//                    Thread.sleep(1000);
                 }
             } catch (IOException | InterruptedException e) {
                 e.printStackTrace();
             }
             producer.close();
-            System.out.println("\nApplicationConfig: Finished publishing");
+            System.out.println("\nApplication: Finished publishing");
         } catch (ConnectionException | IOException e) {
             e.printStackTrace();
         }
@@ -45,6 +46,32 @@ public class DistributedPubSubApplication {
             e.printStackTrace();
         }
     }
+
+    private static void consumerNode(ConsumerConfig config){
+        Node brokerNode = config.getBroker();
+        String topic = config.getTopic();
+        Long startPosition = config.getStartPosition();
+        String file = config.getFile();
+
+//        try (BufferedWriter writer = new BufferedWriter(new FileWriter(file))){
+        try (FileOutputStream writer = new FileOutputStream(file)){
+            ConsumerApi consumer = new ConsumerApi(brokerNode, topic, startPosition);
+            ByteString data;
+            while (true){
+                data = consumer.poll(config.getTimeout());
+                if (data != null){
+                    writer.write(data.toByteArray());
+                    writer.write("\n".getBytes());
+                }
+                else{
+                    System.out.println("\nApplication: NUll data");
+                }
+            }
+        } catch (IOException | ConnectionException | InterruptedException e) {
+            e.printStackTrace();
+        }
+
+    }
     public static void main(String[] args) {
         try {
             ApplicationConfig app = Helper.parseArgs(args);
@@ -52,6 +79,7 @@ public class DistributedPubSubApplication {
             switch (app.getType()) {
                 case Constants.TYPE_PRODUCER -> publisherNode((ProducerConfig) config);
                 case Constants.TYPE_BROKER -> brokerNode((BrokerConfig) config);
+                case Constants.TYPE_CONSUMER -> consumerNode((ConsumerConfig) config);
             }
         } catch (Exception e) {
             e.printStackTrace();
