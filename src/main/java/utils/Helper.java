@@ -3,6 +3,7 @@ package utils;
 import com.google.gson.Gson;
 import configs.ApplicationConfig;
 import configs.BrokerConfig;
+import configs.ConsumerConfig;
 import configs.ProducerConfig;
 
 import java.io.BufferedReader;
@@ -20,12 +21,9 @@ public class Helper {
 
         Type classType;
         switch (type) {
-            case Constants.TYPE_PRODUCER -> {
-                classType = ProducerConfig.class;
-            }
-            case Constants.TYPE_BROKER -> {
-                classType = BrokerConfig.class;
-            }
+            case Constants.TYPE_PRODUCER -> classType = ProducerConfig.class;
+            case Constants.TYPE_BROKER -> classType = BrokerConfig.class;
+            case Constants.TYPE_CONSUMER -> classType = ConsumerConfig.class;
             default -> throw new Exception("INVALID TYPE");
         }
         Gson gson = new Gson();
