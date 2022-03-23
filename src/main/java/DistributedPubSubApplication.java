@@ -1,10 +1,10 @@
 import api.BrokerApi;
-import api.ConsumerApi;
+import api.Consumer;
 import com.google.protobuf.ByteString;
 import configs.ConsumerConfig;
 import utils.ConnectionException;
 import utils.Node;
-import api.ProducerApi;
+import api.Producer;
 import configs.ApplicationConfig;
 import configs.BrokerConfig;
 import configs.ProducerConfig;
@@ -17,7 +17,7 @@ public class DistributedPubSubApplication {
     private static void publisherNode(ProducerConfig config){
         Node brokerNode = config.getBroker();
         try {
-            ProducerApi producer = new ProducerApi(brokerNode);
+            Producer producer = new Producer(brokerNode);
             String topic = config.getTopic();
             String file = config.getFile();
             try (BufferedReader br = new BufferedReader(new FileReader(file))) {
@@ -55,7 +55,7 @@ public class DistributedPubSubApplication {
 
 //        try (BufferedWriter writer = new BufferedWriter(new FileWriter(file))){
         try (FileOutputStream writer = new FileOutputStream(file)){
-            ConsumerApi consumer = new ConsumerApi(brokerNode, topic, startPosition);
+            Consumer consumer = new Consumer(brokerNode, topic, startPosition);
             ByteString data;
             while (true){
                 data = consumer.poll(config.getTimeout());
@@ -86,3 +86,5 @@ public class DistributedPubSubApplication {
         }
     }
 }
+
+

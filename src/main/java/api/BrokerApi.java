@@ -15,7 +15,7 @@ public class BrokerApi {
         this.socket = new ServerSocket(port);
         this.isServerRunning = false;
         this.listenerThread = new Thread(new ServerListener());
-        DatabaseApi.initializeDatabase();
+        Database.initializeDatabase();
     }
 
     /***

@@ -10,10 +10,10 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.Socket;
 
-public class ProducerApi {
+public class Producer {
     private final Connection brokerConnection;
 
-    public ProducerApi(Node brokerNode) throws ConnectionException {
+    public Producer(Node brokerNode) throws ConnectionException {
         try {
             Socket broker = new Socket(brokerNode.getHostName(), brokerNode.getPort());
             this.brokerConnection = new Connection(broker);

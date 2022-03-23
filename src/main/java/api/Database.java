@@ -8,7 +8,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-public class DatabaseApi {
+public class Database {
     private static ConcurrentHashMap<String, Long> currentOffsetMap;
     private static ConcurrentHashMap<String, HashMap<Long, byte[]>> database;
 
