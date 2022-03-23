@@ -1,7 +1,6 @@
 syntax = "proto3";
 
-package messages;
-
+option java_package = "messages";
 option java_outer_classname = "ConsumerRecord";
 
 message Message{

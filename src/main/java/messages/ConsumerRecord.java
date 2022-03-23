@@ -15,7 +15,7 @@ public final class ConsumerRecord {
         (com.google.protobuf.ExtensionRegistryLite) registry);
   }
   public interface MessageOrBuilder extends
-      // @@protoc_insertion_point(interface_extends:messages.Message)
+      // @@protoc_insertion_point(interface_extends:Message)
       com.google.protobuf.MessageOrBuilder {
 
     /**
@@ -31,11 +31,11 @@ public final class ConsumerRecord {
     com.google.protobuf.ByteString getData();
   }
   /**
-   * Protobuf type {@code messages.Message}
+   * Protobuf type {@code Message}
    */
   public static final class Message extends
       com.google.protobuf.GeneratedMessageV3 implements
-      // @@protoc_insertion_point(message_implements:messages.Message)
+      // @@protoc_insertion_point(message_implements:Message)
       MessageOrBuilder {
   private static final long serialVersionUID = 0L;
     // Use Message.newBuilder() to construct.
@@ -107,13 +107,13 @@ public final class ConsumerRecord {
     }
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return messages.ConsumerRecord.internal_static_messages_Message_descriptor;
+      return messages.ConsumerRecord.internal_static_Message_descriptor;
     }
 
     @java.lang.Override
     protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return messages.ConsumerRecord.internal_static_messages_Message_fieldAccessorTable
+      return messages.ConsumerRecord.internal_static_Message_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
               messages.ConsumerRecord.Message.class, messages.ConsumerRecord.Message.Builder.class);
     }
@@ -308,21 +308,21 @@ public final class ConsumerRecord {
       return builder;
     }
     /**
-     * Protobuf type {@code messages.Message}
+     * Protobuf type {@code Message}
      */
     public static final class Builder extends
         com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
-        // @@protoc_insertion_point(builder_implements:messages.Message)
+        // @@protoc_insertion_point(builder_implements:Message)
         messages.ConsumerRecord.MessageOrBuilder {
       public static final com.google.protobuf.Descriptors.Descriptor
           getDescriptor() {
-        return messages.ConsumerRecord.internal_static_messages_Message_descriptor;
+        return messages.ConsumerRecord.internal_static_Message_descriptor;
       }
 
       @java.lang.Override
       protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
           internalGetFieldAccessorTable() {
-        return messages.ConsumerRecord.internal_static_messages_Message_fieldAccessorTable
+        return messages.ConsumerRecord.internal_static_Message_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
                 messages.ConsumerRecord.Message.class, messages.ConsumerRecord.Message.Builder.class);
       }
@@ -355,7 +355,7 @@ public final class ConsumerRecord {
       @java.lang.Override
       public com.google.protobuf.Descriptors.Descriptor
           getDescriptorForType() {
-        return messages.ConsumerRecord.internal_static_messages_Message_descriptor;
+        return messages.ConsumerRecord.internal_static_Message_descriptor;
       }
 
       @java.lang.Override
@@ -537,10 +537,10 @@ public final class ConsumerRecord {
       }
 
 
-      // @@protoc_insertion_point(builder_scope:messages.Message)
+      // @@protoc_insertion_point(builder_scope:Message)
     }
 
-    // @@protoc_insertion_point(class_scope:messages.Message)
+    // @@protoc_insertion_point(class_scope:Message)
     private static final messages.ConsumerRecord.Message DEFAULT_INSTANCE;
     static {
       DEFAULT_INSTANCE = new messages.ConsumerRecord.Message();
@@ -578,10 +578,10 @@ public final class ConsumerRecord {
   }
 
   private static final com.google.protobuf.Descriptors.Descriptor
-    internal_static_messages_Message_descriptor;
+    internal_static_Message_descriptor;
   private static final 
     com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
-      internal_static_messages_Message_fieldAccessorTable;
+      internal_static_Message_fieldAccessorTable;
 
   public static com.google.protobuf.Descriptors.FileDescriptor
       getDescriptor() {
@@ -591,19 +591,19 @@ public final class ConsumerRecord {
       descriptor;
   static {
     java.lang.String[] descriptorData = {
-      "\n\025protos/consumer.proto\022\010messages\"\'\n\007Mes" +
-      "sage\022\016\n\006offset\030\001 \001(\004\022\014\n\004data\030\002 \001(\014B\020B\016Co" +
+      "\n\025protos/consumer.proto\"\'\n\007Message\022\016\n\006of" +
+      "fset\030\001 \001(\004\022\014\n\004data\030\002 \001(\014B\032\n\010messagesB\016Co" +
       "nsumerRecordb\006proto3"
     };
     descriptor = com.google.protobuf.Descriptors.FileDescriptor
       .internalBuildGeneratedFileFrom(descriptorData,
         new com.google.protobuf.Descriptors.FileDescriptor[] {
         });
-    internal_static_messages_Message_descriptor =
+    internal_static_Message_descriptor =
       getDescriptor().getMessageTypes().get(0);
-    internal_static_messages_Message_fieldAccessorTable = new
+    internal_static_Message_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
-        internal_static_messages_Message_descriptor,
+        internal_static_Message_descriptor,
         new java.lang.String[] { "Offset", "Data", });
   }
 

@@ -26,7 +26,7 @@ public class DistributedPubSubApplication {
                 while ((line = br.readLine()) != null) {
                     System.out.println("\nApplication: Publishing, data: " + line);
                     producer.send(topic, line.getBytes());
-//                    Thread.sleep(1000);
+                    Thread.sleep(1000);
                 }
             } catch (IOException | InterruptedException e) {
                 e.printStackTrace();

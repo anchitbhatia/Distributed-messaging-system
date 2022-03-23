@@ -15,7 +15,7 @@ public final class ProducerRecord {
         (com.google.protobuf.ExtensionRegistryLite) registry);
   }
   public interface ProducerMessageOrBuilder extends
-      // @@protoc_insertion_point(interface_extends:messages.ProducerMessage)
+      // @@protoc_insertion_point(interface_extends:ProducerMessage)
       com.google.protobuf.MessageOrBuilder {
 
     /**
@@ -37,11 +37,11 @@ public final class ProducerRecord {
     com.google.protobuf.ByteString getData();
   }
   /**
-   * Protobuf type {@code messages.ProducerMessage}
+   * Protobuf type {@code ProducerMessage}
    */
   public static final class ProducerMessage extends
       com.google.protobuf.GeneratedMessageV3 implements
-      // @@protoc_insertion_point(message_implements:messages.ProducerMessage)
+      // @@protoc_insertion_point(message_implements:ProducerMessage)
       ProducerMessageOrBuilder {
   private static final long serialVersionUID = 0L;
     // Use ProducerMessage.newBuilder() to construct.
@@ -115,13 +115,13 @@ public final class ProducerRecord {
     }
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return messages.ProducerRecord.internal_static_messages_ProducerMessage_descriptor;
+      return messages.ProducerRecord.internal_static_ProducerMessage_descriptor;
     }
 
     @java.lang.Override
     protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return messages.ProducerRecord.internal_static_messages_ProducerMessage_fieldAccessorTable
+      return messages.ProducerRecord.internal_static_ProducerMessage_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
               messages.ProducerRecord.ProducerMessage.class, messages.ProducerRecord.ProducerMessage.Builder.class);
     }
@@ -341,21 +341,21 @@ public final class ProducerRecord {
       return builder;
     }
     /**
-     * Protobuf type {@code messages.ProducerMessage}
+     * Protobuf type {@code ProducerMessage}
      */
     public static final class Builder extends
         com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
-        // @@protoc_insertion_point(builder_implements:messages.ProducerMessage)
+        // @@protoc_insertion_point(builder_implements:ProducerMessage)
         messages.ProducerRecord.ProducerMessageOrBuilder {
       public static final com.google.protobuf.Descriptors.Descriptor
           getDescriptor() {
-        return messages.ProducerRecord.internal_static_messages_ProducerMessage_descriptor;
+        return messages.ProducerRecord.internal_static_ProducerMessage_descriptor;
       }
 
       @java.lang.Override
       protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
           internalGetFieldAccessorTable() {
-        return messages.ProducerRecord.internal_static_messages_ProducerMessage_fieldAccessorTable
+        return messages.ProducerRecord.internal_static_ProducerMessage_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
                 messages.ProducerRecord.ProducerMessage.class, messages.ProducerRecord.ProducerMessage.Builder.class);
       }
@@ -388,7 +388,7 @@ public final class ProducerRecord {
       @java.lang.Override
       public com.google.protobuf.Descriptors.Descriptor
           getDescriptorForType() {
-        return messages.ProducerRecord.internal_static_messages_ProducerMessage_descriptor;
+        return messages.ProducerRecord.internal_static_ProducerMessage_descriptor;
       }
 
       @java.lang.Override
@@ -616,10 +616,10 @@ public final class ProducerRecord {
       }
 
 
-      // @@protoc_insertion_point(builder_scope:messages.ProducerMessage)
+      // @@protoc_insertion_point(builder_scope:ProducerMessage)
     }
 
-    // @@protoc_insertion_point(class_scope:messages.ProducerMessage)
+    // @@protoc_insertion_point(class_scope:ProducerMessage)
     private static final messages.ProducerRecord.ProducerMessage DEFAULT_INSTANCE;
     static {
       DEFAULT_INSTANCE = new messages.ProducerRecord.ProducerMessage();
@@ -657,10 +657,10 @@ public final class ProducerRecord {
   }
 
   private static final com.google.protobuf.Descriptors.Descriptor
-    internal_static_messages_ProducerMessage_descriptor;
+    internal_static_ProducerMessage_descriptor;
   private static final 
     com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
-      internal_static_messages_ProducerMessage_fieldAccessorTable;
+      internal_static_ProducerMessage_fieldAccessorTable;
 
   public static com.google.protobuf.Descriptors.FileDescriptor
       getDescriptor() {
@@ -670,19 +670,19 @@ public final class ProducerRecord {
       descriptor;
   static {
     java.lang.String[] descriptorData = {
-      "\n\025protos/producer.proto\022\010messages\".\n\017Pro" +
-      "ducerMessage\022\r\n\005topic\030\001 \001(\t\022\014\n\004data\030\002 \001(" +
-      "\014B\020B\016ProducerRecordb\006proto3"
+      "\n\025protos/producer.proto\".\n\017ProducerMessa" +
+      "ge\022\r\n\005topic\030\001 \001(\t\022\014\n\004data\030\002 \001(\014B\032\n\010messa" +
+      "gesB\016ProducerRecordb\006proto3"
     };
     descriptor = com.google.protobuf.Descriptors.FileDescriptor
       .internalBuildGeneratedFileFrom(descriptorData,
         new com.google.protobuf.Descriptors.FileDescriptor[] {
         });
-    internal_static_messages_ProducerMessage_descriptor =
+    internal_static_ProducerMessage_descriptor =
       getDescriptor().getMessageTypes().get(0);
-    internal_static_messages_ProducerMessage_fieldAccessorTable = new
+    internal_static_ProducerMessage_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
-        internal_static_messages_ProducerMessage_descriptor,
+        internal_static_ProducerMessage_descriptor,
         new java.lang.String[] { "Topic", "Data", });
   }
 

@@ -28,7 +28,9 @@ public class ProducerApi {
         System.out.println("\nPublisher: publishing Topic: " + topic + ", Length: " + data.length);
         ProducerRecord.ProducerMessage msg = ProducerRecord.ProducerMessage.newBuilder().setTopic(topic).setData(ByteString.copyFrom(data)).build();
         Any packet = Any.pack(msg);
-        this.outputStream.write(packet.toByteArray());
+        byte[] packetBytes = packet.toByteArray();
+        this.outputStream.writeInt(packetBytes.length);
+        this.outputStream.write(packetBytes);
     }
 
     public void close() throws IOException {

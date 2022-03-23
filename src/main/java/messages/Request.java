@@ -15,7 +15,7 @@ public final class Request {
         (com.google.protobuf.ExtensionRegistryLite) registry);
   }
   public interface ConsumerRequestOrBuilder extends
-      // @@protoc_insertion_point(interface_extends:messages.ConsumerRequest)
+      // @@protoc_insertion_point(interface_extends:ConsumerRequest)
       com.google.protobuf.MessageOrBuilder {
 
     /**
@@ -37,11 +37,11 @@ public final class Request {
     long getOffset();
   }
   /**
-   * Protobuf type {@code messages.ConsumerRequest}
+   * Protobuf type {@code ConsumerRequest}
    */
   public static final class ConsumerRequest extends
       com.google.protobuf.GeneratedMessageV3 implements
-      // @@protoc_insertion_point(message_implements:messages.ConsumerRequest)
+      // @@protoc_insertion_point(message_implements:ConsumerRequest)
       ConsumerRequestOrBuilder {
   private static final long serialVersionUID = 0L;
     // Use ConsumerRequest.newBuilder() to construct.
@@ -114,13 +114,13 @@ public final class Request {
     }
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return messages.Request.internal_static_messages_ConsumerRequest_descriptor;
+      return messages.Request.internal_static_ConsumerRequest_descriptor;
     }
 
     @java.lang.Override
     protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return messages.Request.internal_static_messages_ConsumerRequest_fieldAccessorTable
+      return messages.Request.internal_static_ConsumerRequest_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
               messages.Request.ConsumerRequest.class, messages.Request.ConsumerRequest.Builder.class);
     }
@@ -341,21 +341,21 @@ public final class Request {
       return builder;
     }
     /**
-     * Protobuf type {@code messages.ConsumerRequest}
+     * Protobuf type {@code ConsumerRequest}
      */
     public static final class Builder extends
         com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
-        // @@protoc_insertion_point(builder_implements:messages.ConsumerRequest)
+        // @@protoc_insertion_point(builder_implements:ConsumerRequest)
         messages.Request.ConsumerRequestOrBuilder {
       public static final com.google.protobuf.Descriptors.Descriptor
           getDescriptor() {
-        return messages.Request.internal_static_messages_ConsumerRequest_descriptor;
+        return messages.Request.internal_static_ConsumerRequest_descriptor;
       }
 
       @java.lang.Override
       protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
           internalGetFieldAccessorTable() {
-        return messages.Request.internal_static_messages_ConsumerRequest_fieldAccessorTable
+        return messages.Request.internal_static_ConsumerRequest_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
                 messages.Request.ConsumerRequest.class, messages.Request.ConsumerRequest.Builder.class);
       }
@@ -388,7 +388,7 @@ public final class Request {
       @java.lang.Override
       public com.google.protobuf.Descriptors.Descriptor
           getDescriptorForType() {
-        return messages.Request.internal_static_messages_ConsumerRequest_descriptor;
+        return messages.Request.internal_static_ConsumerRequest_descriptor;
       }
 
       @java.lang.Override
@@ -613,10 +613,10 @@ public final class Request {
       }
 
 
-      // @@protoc_insertion_point(builder_scope:messages.ConsumerRequest)
+      // @@protoc_insertion_point(builder_scope:ConsumerRequest)
     }
 
-    // @@protoc_insertion_point(class_scope:messages.ConsumerRequest)
+    // @@protoc_insertion_point(class_scope:ConsumerRequest)
     private static final messages.Request.ConsumerRequest DEFAULT_INSTANCE;
     static {
       DEFAULT_INSTANCE = new messages.Request.ConsumerRequest();
@@ -654,10 +654,10 @@ public final class Request {
   }
 
   private static final com.google.protobuf.Descriptors.Descriptor
-    internal_static_messages_ConsumerRequest_descriptor;
+    internal_static_ConsumerRequest_descriptor;
   private static final 
     com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
-      internal_static_messages_ConsumerRequest_fieldAccessorTable;
+      internal_static_ConsumerRequest_fieldAccessorTable;
 
   public static com.google.protobuf.Descriptors.FileDescriptor
       getDescriptor() {
@@ -667,19 +667,19 @@ public final class Request {
       descriptor;
   static {
     java.lang.String[] descriptorData = {
-      "\n\024protos/request.proto\022\010messages\"0\n\017Cons" +
-      "umerRequest\022\r\n\005topic\030\001 \001(\t\022\016\n\006offset\030\002 \001" +
-      "(\004B\tB\007Requestb\006proto3"
+      "\n\024protos/request.proto\"0\n\017ConsumerReques" +
+      "t\022\r\n\005topic\030\001 \001(\t\022\016\n\006offset\030\002 \001(\004B\023\n\010mess" +
+      "agesB\007Requestb\006proto3"
     };
     descriptor = com.google.protobuf.Descriptors.FileDescriptor
       .internalBuildGeneratedFileFrom(descriptorData,
         new com.google.protobuf.Descriptors.FileDescriptor[] {
         });
-    internal_static_messages_ConsumerRequest_descriptor =
+    internal_static_ConsumerRequest_descriptor =
       getDescriptor().getMessageTypes().get(0);
-    internal_static_messages_ConsumerRequest_fieldAccessorTable = new
+    internal_static_ConsumerRequest_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
-        internal_static_messages_ConsumerRequest_descriptor,
+        internal_static_ConsumerRequest_descriptor,
         new java.lang.String[] { "Topic", "Offset", });
   }
 

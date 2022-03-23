@@ -9,13 +9,14 @@ import utils.Constants;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
+import java.io.EOFException;
 import java.io.IOException;
 import java.net.Socket;
 import java.util.Arrays;
 import java.util.Timer;
 import java.util.TimerTask;
 
-public class Client implements Runnable{
+public class Client implements Runnable {
     private final Socket socket;
     private String type;
     private final DataInputStream inputStream;
@@ -29,38 +30,56 @@ public class Client implements Runnable{
         this.type = null;
     }
 
+//    private byte[] receive() {
+//        System.out.println("\nBroker: reading from client");
+//        byte[] data = new byte[Constants.MAX_BYTES];
+//        int count;
+//        try {
+//
+//            count = this.inputStream.read(data);
+//            if (count == -1){
+//                return null;
+//            }
+//            while (count < 0){
+//                count = this.inputStream.read(data);
+//            }
+//            return Arrays.copyOf(data, count);
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
+//        return null;
+//    }
+
     private byte[] receive() {
-        System.out.println("\nBroker: reading from client");
-        byte[] data = new byte[Constants.MAX_BYTES];
-        int count;
+        byte[] buffer = null;
         try {
-
-            count = this.inputStream.read(data);
-            if (count == -1){
-                return null;
+            int length = this.inputStream.readInt();
+            if (length > 0) {
+                buffer = new byte[length];
+                this.inputStream.readFully(buffer, 0, buffer.length);
             }
-            while (count < 0){
-                count = this.inputStream.read(data);
-            }
-            return Arrays.copyOf(data, count);
-        } catch (IOException e) {
-            e.printStackTrace();
+        } catch (EOFException ignored) {
+        } //No more content available to read
+        catch (IOException exception) {
+            exception.printStackTrace();
         }
-        return null;
+        return buffer;
     }
 
-    private void setType(Any packet){
-        if (packet.is(ProducerRecord.ProducerMessage.class)){
+    private void setType(Any packet) {
+        if (packet.is(ProducerRecord.ProducerMessage.class)) {
             this.type = Constants.TYPE_PRODUCER;
-        }
-        else if (packet.is(Request.ConsumerRequest.class)){
+        } else if (packet.is(Request.ConsumerRequest.class)) {
             this.type = Constants.TYPE_CONSUMER;
+        } else {
+            this.type = Constants.TYPE_NULL;
         }
     }
 
-    private void newRecord(ProducerRecord.ProducerMessage record){
+    private void newRecord(ProducerRecord.ProducerMessage record) {
         String topic = record.getTopic();
         byte[] data = record.getData().toByteArray();
+        System.out.println("\nBroker: received from Producer, Topic: " + topic + ", Data: " + record.getData());
         DatabaseApi.addRecord(topic, data);
     }
 
@@ -70,14 +89,13 @@ public class Client implements Runnable{
         System.out.println("\nBroker: consumer requested, Topic: " + topic + ", Offset: " + offset);
         byte[] data = DatabaseApi.getRecord(topic, offset);
         ConsumerRecord.Message record;
-        if (data!=null){
+        if (data != null) {
             record = ConsumerRecord.Message.newBuilder().
                     setOffset(offset).
                     setData(ByteString.copyFrom(data)).
                     build();
             System.out.println("\nBroker: responding to consumer, Topic: " + topic + ", Data: " + ByteString.copyFrom(data));
-        }
-        else{
+        } else {
             data = new byte[0];
             record = ConsumerRecord.Message.newBuilder().
                     setOffset(offset).
@@ -85,31 +103,34 @@ public class Client implements Runnable{
                     .build();
             System.out.println("\nBroker: responding to consumer, Topic: " + topic + ", Data: null");
         }
-        this.outputStream.write(record.toByteArray());
+        Any packet = Any.pack(record);
+        byte[] packetBytes = packet.toByteArray();
+        this.outputStream.writeInt(packetBytes.length);
+        this.outputStream.write(packetBytes);
     }
 
     @Override
     public void run() {
         System.out.println("\nBroker: connection established " + socket.getPort());
-        while (!socket.isClosed()){
+        while (!socket.isClosed()) {
             byte[] message = receive();
-            if(message != null){
+            if (message != null) {
                 try {
                     Any packet = Any.parseFrom(message);
-                    if (type==null){
+                    if (type == null) {
                         setType(packet);
                     }
                     System.out.println("\nBroker: received packet from " + type);
-                    switch (this.type){
-                        case Constants.TYPE_PRODUCER: newRecord(packet.unpack(ProducerRecord.ProducerMessage.class)); break;
-                        case Constants.TYPE_CONSUMER: serveRequest(packet.unpack(Request.ConsumerRequest.class)); break;
+                    switch (this.type) {
+                        case Constants.TYPE_PRODUCER -> newRecord(packet.unpack(ProducerRecord.ProducerMessage.class));
+                        case Constants.TYPE_CONSUMER -> serveRequest(packet.unpack(Request.ConsumerRequest.class));
+                        default -> System.out.println("\nBroker: invalid client");
                     }
                     DatabaseApi.printDb();
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
-            }
-            else{
+            } else {
                 System.out.println("\nBroker: connection disconnected " + socket.getPort());
                 try {
                     socket.close();

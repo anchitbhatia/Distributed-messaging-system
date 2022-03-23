@@ -2,6 +2,7 @@ package api;
 
 import com.google.protobuf.Any;
 import com.google.protobuf.ByteString;
+import com.google.protobuf.InvalidProtocolBufferException;
 import utils.MyTimer;
 import utils.Node;
 import messages.ConsumerRecord;
@@ -11,6 +12,7 @@ import utils.Constants;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
+import java.io.EOFException;
 import java.io.IOException;
 import java.net.Socket;
 import java.util.Arrays;
@@ -64,36 +66,65 @@ public class ConsumerApi {
                 setOffset(this.nextOffset).
                 build();
         Any packet = Any.pack(request);
-        this.outputStream.write(packet.toByteArray());
+        byte[] packetBytes = packet.toByteArray();
+        this.outputStream.writeInt(packetBytes.length);
+        this.outputStream.write(packetBytes);
     }
 
     public void timedOut(){
         this.isTimedOut = true;
     }
 
-    private ConsumerRecord.Message fetchBroker(){
+//    private ConsumerRecord.Message fetchBroker(){
+//        try {
+//            byte[] record = new byte[Constants.MAX_BYTES];;
+//            int count;
+//            System.out.println("\nConsumer: reading from broker");
+//            Timer timerObj = MyTimer.startTimer(this);
+//            int n = inputStream.available();
+//            while(n==0 && !isTimedOut){
+//                n = inputStream.available();
+//            }
+//            if (isTimedOut){
+//                timerObj.cancel();
+//                this.isTimedOut = false;
+//                return null;
+//            }
+//            count = inputStream.read(record);
+//            timerObj.cancel();
+//            while (count < 0){
+//                count = inputStream.read(record);
+//            }
+//            record = Arrays.copyOf(record, count);
+//            return ConsumerRecord.Message.parseFrom(record);
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
+//        return null;
+//    }
+
+    private byte[] receive() {
+        byte[] buffer = null;
         try {
-            byte[] record = new byte[Constants.MAX_BYTES];;
-            int count;
-            System.out.println("\nConsumer: reading from broker");
-            Timer timerObj = MyTimer.startTimer(this);
-            int n = inputStream.available();
-            while(n==0 && !isTimedOut){
-                n = inputStream.available();
+            int length = this.inputStream.readInt();
+            if(length > 0) {
+                buffer = new byte[length];
+                this.inputStream.readFully(buffer, 0, buffer.length);
+                System.out.println("\nConsumer: read " + length + " bytes");
             }
-            if (isTimedOut){
-                timerObj.cancel();
-                this.isTimedOut = false;
-                return null;
-            }
-            count = inputStream.read(record);
-            timerObj.cancel();
-            while (count < 0){
-                count = inputStream.read(record);
-            }
-            record = Arrays.copyOf(record, count);
-            return ConsumerRecord.Message.parseFrom(record);
-        } catch (IOException e) {
+        } catch (EOFException ignored) {} //No more content available to read
+        catch (IOException exception) {
+            exception.printStackTrace();
+        }
+        return buffer;
+    }
+
+    private ConsumerRecord.Message fetchBroker(){
+        byte[] record = this.receive();
+        try {
+            Any packet = Any.parseFrom(record);
+            return packet.unpack(ConsumerRecord.Message.class);
+        } catch (InvalidProtocolBufferException e) {
             e.printStackTrace();
         }
         return null;
@@ -105,13 +136,14 @@ public class ConsumerApi {
         public void run() {
             while(!broker.isClosed()){
                 try {
+                    Thread.sleep(1000);
                     requestBroker();
                     ConsumerRecord.Message record = fetchBroker();
                     if (record!=null){
                         ByteString data = record.getData();
                         if (data.size() != 0){
                             queue.add(data);
-                            System.out.println("\nConsumer: received from broker, Offset: " + nextOffset + ", Data: " + data);
+                            System.out.println("\nConsumer: received from broker, Offset: " + record.getOffset() + ", Data: " + data);
                             nextOffset += data.size();
 //                            Thread.sleep(1000);
                         }
