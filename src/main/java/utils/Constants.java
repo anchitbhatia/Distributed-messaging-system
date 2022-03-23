@@ -12,6 +12,4 @@ public class Constants {
     public static final String TYPE_NULL = null;
 
     public static final int TIMEOUT = 2000;
-
-    public static final int MAX_BYTES = 1000;
 }

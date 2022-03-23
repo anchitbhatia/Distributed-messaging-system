@@ -22,9 +22,7 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 
 public class ConsumerApi {
-    private final DataInputStream inputStream;
-    private final DataOutputStream outputStream;
-    private final Socket broker;
+    private final Connection brokerConnection;
     private final String topic;
     private Long nextOffset;
     private final BlockingQueue<ByteString> queue;
@@ -33,12 +31,10 @@ public class ConsumerApi {
     public ConsumerApi(Node brokerNode, String topic, Long startPosition) throws ConnectionException {
         try {
             Socket broker = new Socket(brokerNode.getHostName(), brokerNode.getPort());
-            this.broker = broker;
-            this.inputStream = new DataInputStream(broker.getInputStream());
-            this.outputStream = new DataOutputStream(broker.getOutputStream());
+            this.brokerConnection = new Connection(broker);
             this.topic = topic;
             this.nextOffset = startPosition;
-            this.queue = new LinkedBlockingQueue<ByteString>();
+            this.queue = new LinkedBlockingQueue<>();
             this.isTimedOut = false;
             Thread fetchingThread = new Thread(new MessageFetcher(), "Message Fetcher");
             fetchingThread.start();
@@ -52,7 +48,7 @@ public class ConsumerApi {
     }
 
     public void close() throws IOException {
-        broker.close();
+        brokerConnection.close();
     }
 
     public void printQueue(){
@@ -66,9 +62,7 @@ public class ConsumerApi {
                 setOffset(this.nextOffset).
                 build();
         Any packet = Any.pack(request);
-        byte[] packetBytes = packet.toByteArray();
-        this.outputStream.writeInt(packetBytes.length);
-        this.outputStream.write(packetBytes);
+        brokerConnection.send(packet.toByteArray());
     }
 
     public void timedOut(){
@@ -102,25 +96,25 @@ public class ConsumerApi {
 //        }
 //        return null;
 //    }
-
-    private byte[] receive() {
-        byte[] buffer = null;
-        try {
-            int length = this.inputStream.readInt();
-            if(length > 0) {
-                buffer = new byte[length];
-                this.inputStream.readFully(buffer, 0, buffer.length);
-                System.out.println("\nConsumer: read " + length + " bytes");
-            }
-        } catch (EOFException ignored) {} //No more content available to read
-        catch (IOException exception) {
-            exception.printStackTrace();
-        }
-        return buffer;
-    }
+//
+//    private byte[] receive() {
+//        byte[] buffer = null;
+//        try {
+//            int length = this.inputStream.readInt();
+//            if(length > 0) {
+//                buffer = new byte[length];
+//                this.inputStream.readFully(buffer, 0, buffer.length);
+//                System.out.println("\nConsumer: read " + length + " bytes");
+//            }
+//        } catch (EOFException ignored) {} //No more content available to read
+//        catch (IOException exception) {
+//            exception.printStackTrace();
+//        }
+//        return buffer;
+//    }
 
     private ConsumerRecord.Message fetchBroker(){
-        byte[] record = this.receive();
+        byte[] record = this.brokerConnection.receive();
         try {
             Any packet = Any.parseFrom(record);
             return packet.unpack(ConsumerRecord.Message.class);
@@ -134,7 +128,7 @@ public class ConsumerApi {
 
         @Override
         public void run() {
-            while(!broker.isClosed()){
+            while(!brokerConnection.isClosed()){
                 try {
                     Thread.sleep(1000);
                     requestBroker();

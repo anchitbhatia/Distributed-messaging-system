@@ -33,7 +33,8 @@ public class BrokerApi {
             try {
                 while (isServerRunning){
                     Socket clientSocket = socket.accept();
-                    Thread client = new Thread(new Client(clientSocket));
+                    Connection connection = new Connection(clientSocket);
+                    Thread client = new Thread(new Client(connection));
                     client.start();
                 }
             } catch (IOException e) {

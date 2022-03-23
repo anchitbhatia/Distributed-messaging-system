@@ -17,17 +17,12 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 public class Client implements Runnable {
-    private final Socket socket;
+    private final Connection connection;
     private String type;
-    private final DataInputStream inputStream;
-    private final DataOutputStream outputStream;
 
-
-    public Client(Socket socket) throws IOException {
-        this.socket = socket;
-        this.inputStream = new DataInputStream(this.socket.getInputStream());
-        this.outputStream = new DataOutputStream(this.socket.getOutputStream());
-        this.type = null;
+    public Client(Connection connection) throws IOException {
+        this.connection = connection;
+        this.type = Constants.TYPE_NULL;
     }
 
 //    private byte[] receive() {
@@ -50,21 +45,21 @@ public class Client implements Runnable {
 //        return null;
 //    }
 
-    private byte[] receive() {
-        byte[] buffer = null;
-        try {
-            int length = this.inputStream.readInt();
-            if (length > 0) {
-                buffer = new byte[length];
-                this.inputStream.readFully(buffer, 0, buffer.length);
-            }
-        } catch (EOFException ignored) {
-        } //No more content available to read
-        catch (IOException exception) {
-            exception.printStackTrace();
-        }
-        return buffer;
-    }
+//    private byte[] receive() {
+//        byte[] buffer = null;
+//        try {
+//            int length = this.inputStream.readInt();
+//            if (length > 0) {
+//                buffer = new byte[length];
+//                this.inputStream.readFully(buffer, 0, buffer.length);
+//            }
+//        } catch (EOFException ignored) {
+//        } //No more content available to read
+//        catch (IOException exception) {
+//            exception.printStackTrace();
+//        }
+//        return buffer;
+//    }
 
     private void setType(Any packet) {
         if (packet.is(ProducerRecord.ProducerMessage.class)) {
@@ -104,16 +99,14 @@ public class Client implements Runnable {
             System.out.println("\nBroker: responding to consumer, Topic: " + topic + ", Data: null");
         }
         Any packet = Any.pack(record);
-        byte[] packetBytes = packet.toByteArray();
-        this.outputStream.writeInt(packetBytes.length);
-        this.outputStream.write(packetBytes);
+        connection.send(packet.toByteArray());
     }
 
     @Override
     public void run() {
-        System.out.println("\nBroker: connection established " + socket.getPort());
-        while (!socket.isClosed()) {
-            byte[] message = receive();
+        System.out.println("\nBroker: connection established " + connection);
+        while (!connection.isClosed()) {
+            byte[] message =  connection.receive();
             if (message != null) {
                 try {
                     Any packet = Any.parseFrom(message);
@@ -131,9 +124,9 @@ public class Client implements Runnable {
                     e.printStackTrace();
                 }
             } else {
-                System.out.println("\nBroker: connection disconnected " + socket.getPort());
+                System.out.println("\nBroker: connection disconnected " + connection);
                 try {
-                    socket.close();
+                    connection.close();
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
