@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration status="ALL">
+    <Appenders>
+        <File name="file" fileName="app.log">
+            <PatternLayout>
+                <Pattern>%d %p %c{0} [%t] %m %ex%n</Pattern>
+            </PatternLayout>
+        </File>
+        <Console name="STDOUT" target="SYSTEM_OUT">
+            <PatternLayout>
+                <Pattern>%d |%-5p| [%t] %16c{0} : %m %ex%n</Pattern>
+            </PatternLayout>
+        </Console>
+    </Appenders>
+    <Loggers>
+        <Root level="trace">
+            <AppenderRef ref="file" level="ALL"/>
+            <AppenderRef ref="STDOUT" level="ALL"/>
+        </Root>
+    </Loggers>
+</Configuration>
