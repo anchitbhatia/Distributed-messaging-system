@@ -60,8 +60,7 @@ public class PullBasedConsumer extends Consumer implements Runnable{
                         nextOffset += data.size();
                     }
                     else{
-                        LOGGER.info("Sleeping for 3 seconds");
-                        Thread.sleep(3000);
+                        Thread.sleep(1000);
                     }
                 }
             } catch (IOException | InterruptedException e) {
