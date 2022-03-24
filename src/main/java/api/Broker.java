@@ -12,6 +12,7 @@ public class Broker {
     private final int port;
     private final ServerSocket socket;
     private boolean isServerRunning;
+    private final DatabaseThread databaseThreadObj;
     private final Thread listenerThread;
     private final Thread databaseThread;
 
@@ -21,7 +22,8 @@ public class Broker {
         this.isServerRunning = false;
         this.listenerThread = new Thread(new ServerListener());
         Database.initializeDatabase();
-        this.databaseThread = new Thread(new DatabaseThread());
+        this.databaseThreadObj = new DatabaseThread();
+        this.databaseThread = new Thread(databaseThreadObj);
     }
 
     /***
@@ -32,6 +34,12 @@ public class Broker {
         this.listenerThread.start();
         this.databaseThread.start();
         LOGGER.info("Listening at " + port);
+    }
+
+    public void shutdown(){
+        this.isServerRunning = false;
+        this.databaseThreadObj.shutdown();
+        LOGGER.info("Broker shutdown " + port);
     }
 
     private class ServerListener implements Runnable{

@@ -36,6 +36,7 @@ public class Database {
     }
 
     public static void addSubscriber(String topic, Connection connection){
+        LOGGER.info("Adding subscriber to topic : " + topic);
         ConcurrentLinkedDeque<Connection> topicSubscribers = subscribers.getOrDefault(topic, new ConcurrentLinkedDeque<>());
         topicSubscribers.add(connection);
         subscribers.put(topic, topicSubscribers);
@@ -64,11 +65,4 @@ public class Database {
         }
         return topicMap.getOrDefault(requiredOffset, null);
     }
-
-    public static void printDb() {
-        System.out.println("\nDatabase: printing");
-        database.forEach((k, v)
-                -> System.out.println("Topic: " + k + ", Offsets: " + v.keySet()));
-    }
-
 }

@@ -7,8 +7,6 @@ import org.apache.logging.log4j.Logger;
 import utils.Node;
 import messages.ProducerRecord;
 import utils.ConnectionException;
-
-import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.Socket;
 

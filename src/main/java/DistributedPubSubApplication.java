@@ -16,7 +16,7 @@ import java.util.Objects;
 public class DistributedPubSubApplication {
     private static final Logger LOGGER = LogManager.getLogger("Application");
 
-    private static void publisherNode(ProducerConfig config){
+    private static void producerNode(ProducerConfig config){
         Node brokerNode = config.getBroker();
         try {
             Producer producer = new Producer(brokerNode);
@@ -90,7 +90,7 @@ public class DistributedPubSubApplication {
             ApplicationConfig app = Helper.parseArgs(args);
             Object config = app.getConfig();
             switch (app.getType()) {
-                case Constants.TYPE_PRODUCER -> publisherNode((ProducerConfig) config);
+                case Constants.TYPE_PRODUCER -> producerNode((ProducerConfig) config);
                 case Constants.TYPE_BROKER -> brokerNode((BrokerConfig) config);
                 case Constants.TYPE_CONSUMER -> consumerNode((ConsumerConfig) config);
             }

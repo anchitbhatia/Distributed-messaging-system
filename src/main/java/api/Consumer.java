@@ -39,12 +39,14 @@ public class Consumer {
     }
 
     protected ConsumerRecord.Message fetchBroker(){
-        byte[] record = brokerConnection.receive();
-        try {
-            Any packet = Any.parseFrom(record);
-            return packet.unpack(ConsumerRecord.Message.class);
-        } catch (InvalidProtocolBufferException e) {
-            e.printStackTrace();
+        if (!brokerConnection.isClosed()) {
+            byte[] record = brokerConnection.receive();
+            try {
+                Any packet = Any.parseFrom(record);
+                return packet.unpack(ConsumerRecord.Message.class);
+            } catch (InvalidProtocolBufferException e) {
+                e.printStackTrace();
+            }
         }
         return null;
     }
@@ -59,6 +61,7 @@ public class Consumer {
     }
 
     public void close() throws IOException {
+        LOGGER.info("Closing connection to broker at " + brokerConnection.getPort());
         brokerConnection.close();
     }
 

@@ -9,10 +9,6 @@ import messages.Subscribe;
 import utils.Constants;
 
 import java.io.IOException;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentLinkedDeque;
-import java.util.concurrent.LinkedBlockingDeque;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -38,17 +34,9 @@ public class BrokerThread implements Runnable {
         }
     }
 
-//    private void newRecord(ProducerRecord.ProducerMessage record) {
-//        String topic = record.getTopic();
-//        byte[] data = record.getData().toByteArray();
-//        System.out.println("\nBroker: received from Producer, Topic: " + topic + ", Data: " + record.getData());
-//        Database.addRecord(topic, data);
-//    }
-
     private void serveRequest(Request.ConsumerRequest request) throws IOException {
         String topic = request.getTopic();
         long offset = request.getOffset();
-//        System.out.println("\nBroker: consumer requested, Topic: " + topic + ", Offset: " + offset);
         LOGGER.debug("Consumer requested, topic: " + topic + ", offset: " + offset);
         byte[] data = Database.getRecord(topic, offset);
         ConsumerRecord.Message record;
@@ -99,12 +87,8 @@ public class BrokerThread implements Runnable {
                         case Constants.TYPE_PRODUCER -> Database.addQueue(packet.unpack(ProducerRecord.ProducerMessage.class));
                         case Constants.TYPE_CONSUMER -> serveRequest(packet.unpack(Request.ConsumerRequest.class));
                         case Constants.TYPE_SUBSCRIBER -> newSubscriber(packet.unpack(Subscribe.SubscribeRequest.class));
-//                        case Constants.TYPE_PRODUCER -> newRecord(packet.unpack(ProducerRecord.ProducerMessage.class));
-//                        case Constants.TYPE_CONSUMER -> serveRequest(packet.unpack(Request.ConsumerRequest.class));
-//                        case Constants.TYPE_SUBSCRIBER -> serveSubscriber(packet.unpack(Subscribe.SubscribeRequest.class));
                         default -> LOGGER.info("Invalid client");
                     }
-//                    Database.printDb();
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
