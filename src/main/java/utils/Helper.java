@@ -10,6 +10,10 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 import java.lang.reflect.Type;
 
+/***
+ * Helper class
+ * @author anchitbhatia
+ */
 public class Helper {
 
     public static ApplicationConfig parseArgs(String[] args) throws Exception {

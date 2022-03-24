@@ -8,6 +8,10 @@ import utils.Constants;
 import java.util.HashMap;
 import java.util.concurrent.*;
 
+/***
+ * Database class to manage database operations
+ * @author anchitbhatia
+ */
 public class Database {
     private static final Logger LOGGER = LogManager.getLogger(Database.class);
     private static BlockingQueue<ProducerRecord.ProducerMessage> msgQueue;

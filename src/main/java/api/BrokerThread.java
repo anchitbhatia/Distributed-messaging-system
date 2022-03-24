@@ -12,6 +12,10 @@ import java.io.IOException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+/***
+ * Broker Thread class to handle concurrent requests
+ * @author anchitbhatia
+ */
 public class BrokerThread implements Runnable {
     private static final Logger LOGGER = LogManager.getLogger(BrokerThread.class);
     private final Connection connection;

@@ -2,6 +2,10 @@ package configs;
 
 import utils.Node;
 
+/***
+ * Class to parse consumer config
+ * @author anchitbhatia
+ */
 public class ConsumerConfig {
     private Node host;
     private Node broker;

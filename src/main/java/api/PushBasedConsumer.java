@@ -9,6 +9,10 @@ import org.apache.logging.log4j.Logger;
 import utils.ConnectionException;
 import utils.Node;
 
+/***
+ * Push based consumer class to create push based consumers
+ * @author anchitbhatia
+ */
 public class PushBasedConsumer extends Consumer implements Runnable{
     private static final Logger LOGGER = LogManager.getLogger(PushBasedConsumer.class);
 

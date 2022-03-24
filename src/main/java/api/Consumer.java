@@ -17,6 +17,10 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 
+/***
+ * Consumer api class
+ * @author anchitbhatia
+ */
 public class Consumer {
     private static final Logger LOGGER = LogManager.getLogger(Consumer.class);
     protected final Connection brokerConnection;

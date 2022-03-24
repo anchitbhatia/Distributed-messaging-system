@@ -2,6 +2,10 @@ package configs;
 
 import utils.Node;
 
+/***
+ * Class to parse Producer config
+ * @author anchitbhatia
+ */
 public class ProducerConfig {
     private Node host;
     private Node broker;

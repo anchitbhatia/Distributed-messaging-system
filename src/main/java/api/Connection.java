@@ -12,6 +12,10 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.TimeUnit;
 
+/***
+ * Connection class to manage connection
+ * @author anchitbhatia
+ */
 public class Connection {
     private final Node node;
     private final Socket socket;

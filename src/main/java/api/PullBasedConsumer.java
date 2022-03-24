@@ -11,6 +11,10 @@ import utils.Node;
 
 import java.io.IOException;
 
+/***
+ * Pull based consumer class to create pull based consumers
+ * @author anchitbhatia
+ */
 public class PullBasedConsumer extends Consumer implements Runnable{
     private static final Logger LOGGER = LogManager.getLogger(PullBasedConsumer.class);
     private Long nextOffset;

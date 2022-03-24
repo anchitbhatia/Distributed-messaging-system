@@ -1,5 +1,9 @@
 package configs;
 
+/***
+ * Class to parse application config
+ * @author anchitbhatia
+ */
 public class ApplicationConfig {
     private final String type;
     private final Object config;

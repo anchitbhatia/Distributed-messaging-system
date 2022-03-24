@@ -10,6 +10,10 @@ import utils.ConnectionException;
 import java.io.IOException;
 import java.net.Socket;
 
+/***
+ * Producer api class
+ * @author anchitbhatia
+ */
 public class Producer {
     private static final Logger LOGGER = LogManager.getLogger(Producer.class);
     private final Connection brokerConnection;

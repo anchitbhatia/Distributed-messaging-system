@@ -1,5 +1,9 @@
 package utils;
 
+/***
+ * Constants class to manage constants
+ * @author anchitbhatia
+ */
 public class Constants {
     public static final String TYPE_FLAG = "-type";
     public static final int TYPE_INDEX = 1;

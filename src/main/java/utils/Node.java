@@ -1,5 +1,9 @@
 package utils;
 
+/***
+ * Node class to manage node
+ * @author anchitbhatia
+ */
 public class Node{
     private final String hostName;
     private final int port;

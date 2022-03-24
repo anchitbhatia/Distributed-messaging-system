@@ -13,6 +13,10 @@ import utils.*;
 import java.io.*;
 import java.util.Objects;
 
+/***
+ * Application class
+ * @author anchitbhatia
+ */
 public class DistributedPubSubApplication {
     private static final Logger LOGGER = LogManager.getLogger("Application");
 
@@ -24,7 +28,6 @@ public class DistributedPubSubApplication {
             String file = config.getFile();
             try (BufferedReader br = new BufferedReader(new FileReader(file))) {
                 String line;
-//                Thread.sleep(3000);
                 while ((line = br.readLine()) != null) {
                     LOGGER.info("Publishing, data: " + line);
                     producer.send(topic, line.getBytes());

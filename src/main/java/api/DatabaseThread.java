@@ -9,6 +9,10 @@ import org.apache.logging.log4j.Logger;
 
 import java.util.concurrent.ConcurrentLinkedDeque;
 
+/***
+ * Database Thread class to manage delivery of messages to subscribers
+ * @author anchitbhatia
+ */
 public class DatabaseThread implements Runnable{
     private static final Logger LOGGER = LogManager.getLogger(DatabaseThread.class);
     private boolean isRunning;

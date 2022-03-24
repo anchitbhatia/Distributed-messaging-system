@@ -7,6 +7,10 @@ import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 
+/***
+ * Broker server class
+ * @author anchitbhatia
+ */
 public class Broker {
     private static final Logger LOGGER = LogManager.getLogger(Broker.class);
     private final int port;
