@@ -3,12 +3,12 @@
     <Appenders>
         <File name="file" fileName="app.log">
             <PatternLayout>
-                <Pattern>%d %p %c{0} [%t] %m %ex%n</Pattern>
+                <Pattern>%d |%-5p| [%t] %c{0} : %m %ex%n</Pattern>
             </PatternLayout>
         </File>
         <Console name="STDOUT" target="SYSTEM_OUT">
             <PatternLayout>
-                <Pattern>%d |%-5p| [%t] %16c{0} : %m %ex%n</Pattern>
+                <Pattern>%d |%-5p| [%t] %c{0} : %m %ex%n</Pattern>
             </PatternLayout>
         </Console>
     </Appenders>

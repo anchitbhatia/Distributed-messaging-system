@@ -24,7 +24,7 @@ public class Database {
 
     public static void addQueue(ProducerRecord.ProducerMessage record) {
         msgQueue.add(record);
-        LOGGER.info("Added msg to queue: " + record.getTopic() + ", offset: " + record.getData());
+        LOGGER.info("Added msg to queue: " + record.getTopic() + ", data: " + record.getData());
     }
 
     public static ProducerRecord.ProducerMessage pollMsgQueue() {

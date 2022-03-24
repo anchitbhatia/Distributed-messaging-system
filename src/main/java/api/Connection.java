@@ -17,7 +17,7 @@ public class Connection {
     private final Socket socket;
     private final DataInputStream inputStream;
     private final DataOutputStream outputStream;
-    private BlockingQueue<byte[]> sendQueue;
+    private final BlockingQueue<byte[]> sendQueue;
 
     public Connection(Socket socket) throws IOException {
         this.socket = socket;
