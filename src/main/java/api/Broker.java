@@ -1,21 +1,27 @@
 package api;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 
-public class BrokerApi {
+public class Broker {
     private final int port;
     private final ServerSocket socket;
     private boolean isServerRunning;
     private final Thread listenerThread;
+    private final Thread databaseThread;
+    private static final Logger LOGGER = LogManager.getLogger(Broker.class);
 
-    public BrokerApi(int port) throws IOException {
+    public Broker(int port) throws IOException {
         this.port = port;
         this.socket = new ServerSocket(port);
         this.isServerRunning = false;
         this.listenerThread = new Thread(new ServerListener());
         Database.initializeDatabase();
+        this.databaseThread = new Thread(new DatabaseThread());
     }
 
     /***
@@ -24,7 +30,8 @@ public class BrokerApi {
     public void startServer(){
         this.isServerRunning = true;
         this.listenerThread.start();
-        System.out.println("\nBroker: Listening at " + port);
+        this.databaseThread.start();
+        LOGGER.info("Listening at " + port);
     }
 
     private class ServerListener implements Runnable{
@@ -34,7 +41,7 @@ public class BrokerApi {
                 while (isServerRunning){
                     Socket clientSocket = socket.accept();
                     Connection connection = new Connection(clientSocket);
-                    Thread client = new Thread(new Client(connection));
+                    Thread client = new Thread(new BrokerThread(connection));
                     client.start();
                 }
             } catch (IOException e) {

@@ -16,8 +16,8 @@ public class PushBasedThread implements Runnable{
     public void run() {
         consumer.subscribeBroker();
         while(!consumer.isClosed()){
-            try {
-                Thread.sleep(1000);
+//            try {
+//                Thread.sleep(1000);
                 ConsumerRecord.Message record = consumer.fetchBroker();
                 if (record!=null){
                     ByteString data = record.getData();
@@ -26,9 +26,9 @@ public class PushBasedThread implements Runnable{
                         System.out.println("\nPush Consumer: received from broker, Offset: " + record.getOffset() + ", Data: " + data);
                     }
                 }
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
+//            } catch (InterruptedException e) {
+//                e.printStackTrace();
+//            }
         }
     }
 }

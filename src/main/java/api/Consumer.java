@@ -28,8 +28,8 @@ public class Consumer {
             this.topic = topic;
             this.queue = new LinkedBlockingQueue<>();
 //            this.isTimedOut = false;
-//            Thread fetchingThread = new Thread(new PullBasedThread(this, offset), "Message Fetcher");
-            Thread fetchingThread = new Thread(new PushBasedThread(this), "Message Fetcher");
+            Thread fetchingThread = new Thread(new PullBasedThread(this, offset), "Message Fetcher");
+//            Thread fetchingThread = new Thread(new PushBasedThread(this), "Message Fetcher");
             fetchingThread.start();
 
         } catch (IOException e) {
@@ -68,7 +68,6 @@ public class Consumer {
         Any packet = Any.pack(request);
         brokerConnection.send(packet.toByteArray());
     }
-
 
     protected void addMessage(ByteString data){
         this.queue.add(data);

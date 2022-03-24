@@ -1,5 +1,7 @@
 package api;
 
+import messages.ProducerRecord;
+import utils.Constants;
 import utils.Node;
 
 import java.io.DataInputStream;
@@ -7,18 +9,35 @@ import java.io.DataOutputStream;
 import java.io.EOFException;
 import java.io.IOException;
 import java.net.Socket;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingDeque;
+import java.util.concurrent.TimeUnit;
 
 public class Connection {
     private final Node node;
     private final Socket socket;
     private final DataInputStream inputStream;
     private final DataOutputStream outputStream;
+    private BlockingQueue<byte[]> sendQueue;
 
     public Connection(Socket socket) throws IOException {
         this.socket = socket;
         this.node = new Node(socket.getInetAddress().getHostName(), socket.getPort());
         this.inputStream = new DataInputStream(socket.getInputStream());
         this.outputStream = new DataOutputStream(socket.getOutputStream());
+        sendQueue = new LinkedBlockingDeque<>();
+    }
+
+    public void addQueue(byte[] record){
+        this.sendQueue.add(record);
+    }
+
+    public byte[] pollSendQueue() {
+        try {
+            return this.sendQueue.poll(Constants.POLL_TIMEOUT, TimeUnit.MILLISECONDS);
+        } catch (InterruptedException e) {
+            return null;
+        }
     }
 
     public byte[] receive(){
