@@ -1,18 +1,20 @@
-import api.Broker;
-import api.Consumer;
+import api.*;
 import com.google.protobuf.ByteString;
 import configs.ConsumerConfig;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import utils.ConnectionException;
 import utils.Node;
-import api.Producer;
 import configs.ApplicationConfig;
 import configs.BrokerConfig;
 import configs.ProducerConfig;
 import utils.*;
 
 import java.io.*;
+import java.util.Objects;
 
 public class DistributedPubSubApplication {
+    private static final Logger LOGGER = LogManager.getLogger("Application");
 
     private static void publisherNode(ProducerConfig config){
         Node brokerNode = config.getBroker();
@@ -24,7 +26,7 @@ public class DistributedPubSubApplication {
                 String line;
 //                Thread.sleep(3000);
                 while ((line = br.readLine()) != null) {
-                    System.out.println("\nApplication: Publishing, data: " + line);
+                    LOGGER.info("Publishing, data: " + line);
                     producer.send(topic, line.getBytes());
                     Thread.sleep(50);
                 }
@@ -32,7 +34,7 @@ public class DistributedPubSubApplication {
                 e.printStackTrace();
             }
             producer.close();
-            System.out.println("\nApplication: Finished publishing");
+            LOGGER.info("Finished publishing");
         } catch (ConnectionException | IOException e) {
             e.printStackTrace();
         }
@@ -50,12 +52,23 @@ public class DistributedPubSubApplication {
     private static void consumerNode(ConsumerConfig config){
         Node brokerNode = config.getBroker();
         String topic = config.getTopic();
-        Long startPosition = config.getStartPosition();
-        String file = config.getFile();
+        String type = config.getType();
+        Consumer consumer = null;
+        try {
+            if (Objects.equals(type, Constants.PUSH_TYPE)) {
+                consumer = new PushBasedConsumer(brokerNode, topic);
+            }
+            else {
+                Long startPosition = config.getStartPosition();
+                consumer = new PullBasedConsumer(brokerNode, topic, startPosition);
+            }
+        } catch (ConnectionException e) {
+            e.printStackTrace();
+        }
 
-//        try (BufferedWriter writer = new BufferedWriter(new FileWriter(file))){
+        String file = config.getFile();
         try (FileOutputStream writer = new FileOutputStream(file)){
-            Consumer consumer = new Consumer(brokerNode, topic, startPosition);
+
             ByteString data;
             while (true){
                 data = consumer.poll(config.getTimeout());
@@ -64,10 +77,10 @@ public class DistributedPubSubApplication {
                     writer.write("\n".getBytes());
                 }
                 else{
-                    System.out.println("\nApplication: NUll data");
+                    LOGGER.info("NUll data received");
                 }
             }
-        } catch (IOException | ConnectionException | InterruptedException e) {
+        } catch (IOException | InterruptedException e) {
             e.printStackTrace();
         }
 

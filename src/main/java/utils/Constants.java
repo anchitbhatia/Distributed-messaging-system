@@ -11,6 +11,7 @@ public class Constants {
     public static final String TYPE_CONSUMER = "consumer";
     public static final String TYPE_SUBSCRIBER = "subscriber";
     public static final String TYPE_NULL = null;
+    public static final String PUSH_TYPE = "pull";
 
     public static final int POLL_TIMEOUT = 2000;
 }

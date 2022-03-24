@@ -1,6 +1,5 @@
 package api;
 
-import messages.ProducerRecord;
 import utils.Constants;
 import utils.Node;
 
@@ -58,9 +57,11 @@ public class Connection {
 
     public boolean send(byte[] message){
         try {
-            this.outputStream.writeInt(message.length);
-            this.outputStream.write(message);
-            return true;
+            if (!this.socket.isClosed()) {
+                this.outputStream.writeInt(message.length);
+                this.outputStream.write(message);
+                return true;
+            }
         } catch (IOException e) {
             e.printStackTrace();
         }

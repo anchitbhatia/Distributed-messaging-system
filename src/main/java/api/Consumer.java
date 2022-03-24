@@ -19,19 +19,16 @@ import java.util.concurrent.TimeUnit;
 
 public class Consumer {
     private static final Logger LOGGER = LogManager.getLogger(Consumer.class);
-    private final Connection brokerConnection;
-    private final BlockingQueue<ByteString> queue;
-    private final String topic;
+    protected final Connection brokerConnection;
+    protected final BlockingQueue<ByteString> queue;
+    protected final String topic;
 
-    public Consumer(Node brokerNode, String topic, Long offset) throws ConnectionException {
+    public Consumer(Node brokerNode, String topic) throws ConnectionException {
         try {
             Socket broker = new Socket(brokerNode.getHostName(), brokerNode.getPort());
             this.brokerConnection = new Connection(broker);
             this.topic = topic;
             this.queue = new LinkedBlockingQueue<>();
-            Thread fetchingThread = new Thread(new PullBasedThread(this, offset), "Message Fetcher");
-            fetchingThread.start();
-
         } catch (IOException e) {
             throw new ConnectionException("Unable to establish connection to broker " + brokerNode);
         }
@@ -52,22 +49,6 @@ public class Consumer {
         return null;
     }
 
-    protected void requestBroker(Long offset) throws IOException {
-        LOGGER.info("Requesting topic: " + topic + ", offset: " + offset);
-        Request.ConsumerRequest request = Request.ConsumerRequest.newBuilder().
-                setTopic(topic).
-                setOffset(offset).
-                build();
-        Any packet = Any.pack(request);
-        brokerConnection.send(packet.toByteArray());
-    }
-
-    protected void subscribeBroker(){
-        LOGGER.info("Subscribing broker, topic: " + topic);
-        Subscribe.SubscribeRequest request = Subscribe.SubscribeRequest.newBuilder().setTopic(topic).build();
-        Any packet = Any.pack(request);
-        brokerConnection.send(packet.toByteArray());
-    }
 
     protected void addMessage(ByteString data){
         this.queue.add(data);

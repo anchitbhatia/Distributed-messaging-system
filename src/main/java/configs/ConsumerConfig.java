@@ -6,6 +6,7 @@ public class ConsumerConfig {
     private Node host;
     private Node broker;
     private String topic;
+    private String type;
     private String file;
     private long startPosition;
     private long timeout;
@@ -20,6 +21,10 @@ public class ConsumerConfig {
 
     public String getTopic() {
         return topic;
+    }
+
+    public String getType() {
+        return type;
     }
 
     public Long getStartPosition() {
