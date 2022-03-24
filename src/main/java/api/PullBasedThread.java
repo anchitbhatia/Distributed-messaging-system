@@ -2,10 +2,13 @@ package api;
 
 import com.google.protobuf.ByteString;
 import messages.ConsumerRecord;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.io.IOException;
 
 public class PullBasedThread implements Runnable{
+    private static final Logger LOGGER = LogManager.getLogger(PullBasedThread.class);
     private final Consumer consumer;
     private Long nextOffset;
 
@@ -25,12 +28,11 @@ public class PullBasedThread implements Runnable{
                     ByteString data = record.getData();
                     if (data.size() != 0){
                         consumer.addMessage(data);
-                        System.out.println("\nConsumer: received from broker, Offset: " + record.getOffset() + ", Data: " + data);
+                        LOGGER.info("Received offset: " + record.getOffset() + ", data: " + data);
                         nextOffset += data.size();
-//                            Thread.sleep(1000);
                     }
                     else{
-                        System.out.println("\nConsumer: sleeping for 3 seconds");
+                        LOGGER.info("Sleeping for 3 seconds");
                         Thread.sleep(3000);
                     }
                 }

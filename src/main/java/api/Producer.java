@@ -2,6 +2,8 @@ package api;
 
 import com.google.protobuf.Any;
 import com.google.protobuf.ByteString;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import utils.Node;
 import messages.ProducerRecord;
 import utils.ConnectionException;
@@ -11,6 +13,7 @@ import java.io.IOException;
 import java.net.Socket;
 
 public class Producer {
+    private static final Logger LOGGER = LogManager.getLogger(Producer.class);
     private final Connection brokerConnection;
 
     public Producer(Node brokerNode) throws ConnectionException {
@@ -23,14 +26,14 @@ public class Producer {
     }
 
     public void send(String topic, byte[] data) throws IOException {
-        System.out.println("\nPublisher: publishing Topic: " + topic + ", Length: " + data.length);
+        LOGGER.info("Publishing topic: " + topic + ", length: " + data.length);
         ProducerRecord.ProducerMessage msg = ProducerRecord.ProducerMessage.newBuilder().setTopic(topic).setData(ByteString.copyFrom(data)).build();
         Any packet = Any.pack(msg);
         brokerConnection.send(packet.toByteArray());
     }
 
     public void close() throws IOException {
-        System.out.println("\nPublisher: closing connection to broker at " + brokerConnection.getPort());
+        LOGGER.info("Closing connection to broker at " + brokerConnection.getPort());
         brokerConnection.close();
     }
 }

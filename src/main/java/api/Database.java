@@ -9,7 +9,6 @@ import java.util.HashMap;
 import java.util.concurrent.*;
 
 public class Database {
-//    private static BlockingQueue<ProducerRecord.ProducerMessage> msgQueue;
     private static final Logger LOGGER = LogManager.getLogger(Database.class);
     private static BlockingQueue<ProducerRecord.ProducerMessage> msgQueue;
     private static ConcurrentHashMap<String, ConcurrentLinkedDeque<Connection>> subscribers;

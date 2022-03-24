@@ -1,4 +1,4 @@
-import api.BrokerApi;
+import api.Broker;
 import api.Consumer;
 import com.google.protobuf.ByteString;
 import configs.ConsumerConfig;
@@ -22,11 +22,11 @@ public class DistributedPubSubApplication {
             String file = config.getFile();
             try (BufferedReader br = new BufferedReader(new FileReader(file))) {
                 String line;
-                Thread.sleep(3000);
+//                Thread.sleep(3000);
                 while ((line = br.readLine()) != null) {
                     System.out.println("\nApplication: Publishing, data: " + line);
                     producer.send(topic, line.getBytes());
-                    Thread.sleep(1000);
+                    Thread.sleep(50);
                 }
             } catch (IOException | InterruptedException e) {
                 e.printStackTrace();
@@ -40,7 +40,7 @@ public class DistributedPubSubApplication {
 
     private static void brokerNode(BrokerConfig config) {
         try {
-            BrokerApi broker = new BrokerApi(config.getHost().getPort());
+            Broker broker = new Broker(config.getHost().getPort());
             broker.startServer();
         } catch (IOException e) {
             e.printStackTrace();

@@ -8,12 +8,12 @@ import java.net.ServerSocket;
 import java.net.Socket;
 
 public class Broker {
+    private static final Logger LOGGER = LogManager.getLogger(Broker.class);
     private final int port;
     private final ServerSocket socket;
     private boolean isServerRunning;
     private final Thread listenerThread;
     private final Thread databaseThread;
-    private static final Logger LOGGER = LogManager.getLogger(Broker.class);
 
     public Broker(int port) throws IOException {
         this.port = port;
