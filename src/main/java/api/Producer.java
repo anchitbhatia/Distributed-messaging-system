@@ -27,11 +27,18 @@ public class Producer {
         }
     }
 
-    public void send(String topic, byte[] data) throws IOException {
-        LOGGER.info("Publishing topic: " + topic + ", length: " + data.length);
-        ProducerRecord.ProducerMessage msg = ProducerRecord.ProducerMessage.newBuilder().setTopic(topic).setData(ByteString.copyFrom(data)).build();
-        Any packet = Any.pack(msg);
-        brokerConnection.send(packet.toByteArray());
+    public void send(String topic, byte[] data) throws IOException, ConnectionException {
+        if (!brokerConnection.isClosed()) {
+            LOGGER.info("Publishing topic: " + topic + ", length: " + data.length);
+            ProducerRecord.ProducerMessage msg = ProducerRecord.ProducerMessage.newBuilder().setTopic(topic).setData(ByteString.copyFrom(data)).build();
+            Any packet = Any.pack(msg);
+            try {
+                brokerConnection.send(packet.toByteArray());
+            } catch (ConnectionException e) {
+                this.close();
+                throw e;
+            }
+        }
     }
 
     public void close() throws IOException {

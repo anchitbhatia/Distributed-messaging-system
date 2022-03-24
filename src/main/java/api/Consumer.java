@@ -38,16 +38,32 @@ public class Consumer {
         }
     }
 
-    public ByteString poll(long timeout) throws InterruptedException {
+    /***
+     * Method to poll queue to get data received
+     * @param timeout : timeout to poll
+     * @return data received from broker
+     * @throws InterruptedException if interrupted while waiting
+     */
+    public ByteString poll(long timeout) throws InterruptedException, ConnectionException {
+        if (queue.isEmpty() && brokerConnection.isClosed()) {
+            throw new ConnectionException("Connection closed!");
+        }
         return queue.poll(timeout, TimeUnit.MILLISECONDS);
     }
 
-    protected ConsumerRecord.Message fetchBroker(){
+    /***
+     * Method to fetch record from broker
+     * @return Record fetched
+     */
+    protected ConsumerRecord.Message fetchBroker() throws IOException, ConnectionException {
         if (!brokerConnection.isClosed()) {
             byte[] record = brokerConnection.receive();
             try {
                 Any packet = Any.parseFrom(record);
                 return packet.unpack(ConsumerRecord.Message.class);
+            } catch (NullPointerException e) {
+                this.close();
+                throw new ConnectionException("Connection closed!");
             } catch (InvalidProtocolBufferException e) {
                 e.printStackTrace();
             }
@@ -55,15 +71,26 @@ public class Consumer {
         return null;
     }
 
-
+    /***
+     * Method to add message to queue
+     * @param data : data to be added
+     */
     protected void addMessage(ByteString data){
         this.queue.add(data);
     }
 
+    /***
+     * Method to check if connection is closed
+     * @return true if connection is closed else false
+     */
     protected boolean isClosed(){
         return brokerConnection.isClosed();
     }
 
+    /***
+     * Method to close connection
+     * @throws IOException if exception occurs while closing
+     */
     public void close() throws IOException {
         LOGGER.info("Closing connection to broker at " + brokerConnection.getPort());
         brokerConnection.close();

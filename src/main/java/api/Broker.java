@@ -20,6 +20,7 @@ public class Broker {
     private final Thread listenerThread;
     private final Thread databaseThread;
 
+    // Broker server constructor
     public Broker(int port) throws IOException {
         this.port = port;
         this.socket = new ServerSocket(port);
@@ -30,9 +31,7 @@ public class Broker {
         this.databaseThread = new Thread(databaseThreadObj);
     }
 
-    /***
-     * Method to start server
-     */
+    // Method to start server
     public void startServer(){
         this.isServerRunning = true;
         this.listenerThread.start();
@@ -40,12 +39,14 @@ public class Broker {
         LOGGER.info("Listening at " + port);
     }
 
+    // Method to shut down server
     public void shutdown(){
         this.isServerRunning = false;
         this.databaseThreadObj.shutdown();
         LOGGER.info("Broker shutdown " + port);
     }
 
+    // Class to listen for incoming connections
     private class ServerListener implements Runnable{
         @Override
         public void run() {

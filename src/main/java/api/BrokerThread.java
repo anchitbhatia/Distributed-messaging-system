@@ -6,6 +6,7 @@ import messages.ConsumerRecord;
 import messages.ProducerRecord;
 import messages.Request;
 import messages.Subscribe;
+import utils.ConnectionException;
 import utils.Constants;
 
 import java.io.IOException;
@@ -21,11 +22,13 @@ public class BrokerThread implements Runnable {
     private final Connection connection;
     private String type;
 
+    // Broker thread constructor
     public BrokerThread(Connection connection) throws IOException {
         this.connection = connection;
         this.type = Constants.TYPE_NULL;
     }
 
+    // Method to set type of connection
     private void setType(Any packet) {
         if (packet.is(ProducerRecord.ProducerMessage.class)) {
             this.type = Constants.TYPE_PRODUCER;
@@ -38,6 +41,7 @@ public class BrokerThread implements Runnable {
         }
     }
 
+    // Method to serve request of pull based consumer
     private void serveRequest(Request.ConsumerRequest request) throws IOException {
         String topic = request.getTopic();
         long offset = request.getOffset();
@@ -59,11 +63,18 @@ public class BrokerThread implements Runnable {
             LOGGER.debug("Responding to consumer, topic: " + topic + ", data: null");
         }
         Any packet = Any.pack(record);
-        connection.send(packet.toByteArray());
+        try {
+            connection.send(packet.toByteArray());
+        } catch (ConnectionException e) {
+            connection.close();
+            LOGGER.debug("Unable to send to consumer, topic: " + topic + ", offset: " + offset);
+            return;
+        }
         LOGGER.debug("Sent to consumer, topic: " + topic + ", offset: " + offset);
     }
 
-    private void newSubscriber(Subscribe.SubscribeRequest packet){
+    // Method to add new subscriber
+    private void newSubscriber(Subscribe.SubscribeRequest packet) throws IOException {
         String topic = packet.getTopic();
         Database.addSubscriber(topic, connection);
         while (!connection.isClosed()) {
@@ -71,7 +82,12 @@ public class BrokerThread implements Runnable {
             while (msg == null) {
                 msg = connection.pollSendQueue();
             }
-            connection.send(msg);
+            try {
+                connection.send(msg);
+            } catch (ConnectionException e) {
+                Database.removeSubscriber(topic, connection);
+                connection.close();
+            }
         }
     }
 

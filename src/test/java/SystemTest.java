@@ -35,12 +35,12 @@ class SystemTest {
         messages.add("sub");
     }
 
-    private void publish(String msg) throws IOException, InterruptedException {
+    private void publish(String msg) throws IOException, InterruptedException, ConnectionException {
         producer.send(topic, msg.getBytes());
         Thread.sleep(10);
     }
 
-    private void publishMany() throws IOException {
+    private void publishMany() throws IOException, ConnectionException {
         for (String msg: messages) {
             producer.send(topic, msg.getBytes());
         }
@@ -48,7 +48,7 @@ class SystemTest {
 
     @Test
     @Order(1)
-    void pullBasedTest() throws InterruptedException, IOException {
+    void pullBasedTest() throws InterruptedException, IOException, ConnectionException {
         String msg = "test1";
         publish(msg);
         ByteString data = pullBasedConsumer.poll(timeout);
@@ -57,7 +57,7 @@ class SystemTest {
 
     @Test
     @Order(2)
-    void pullBasedTest2() throws InterruptedException, IOException {
+    void pullBasedTest2() throws InterruptedException, IOException, ConnectionException {
         String msg = "test2";
         publish(msg);
         ByteString data = pullBasedConsumer.poll(timeout);
@@ -66,7 +66,7 @@ class SystemTest {
 
     @Test
     @Order(3)
-    void pullBasedTest3() throws InterruptedException, IOException {
+    void pullBasedTest3() throws InterruptedException, IOException, ConnectionException {
         String msg = "test3";
         publish(msg);
         ByteString data = pullBasedConsumer.poll(timeout);
@@ -75,14 +75,14 @@ class SystemTest {
 
     @Test
     @Order(4)
-    void pullBasedNullTest() throws InterruptedException, IOException {
+    void pullBasedNullTest() throws InterruptedException, ConnectionException {
         ByteString data = pullBasedConsumer.poll(0);
         assertNull(data);
     }
 
     @Test
     @Order(5)
-    void pullBasedManyTest() throws IOException, InterruptedException {
+    void pullBasedManyTest() throws IOException, InterruptedException, ConnectionException {
         publishMany();
         for (String msg: messages) {
             ByteString data = pullBasedConsumer.poll(timeout);
@@ -103,7 +103,7 @@ class SystemTest {
 
     @Test
     @Order(7)
-    void pushBasedTest2() throws InterruptedException, IOException {
+    void pushBasedTest2() throws InterruptedException, IOException, ConnectionException {
         String msg = "test5";
         publish(msg);
         ByteString data = pushBasedConsumer.poll(timeout);
@@ -112,7 +112,7 @@ class SystemTest {
 
     @Test
     @Order(8)
-    void pushBasedTest3() throws InterruptedException, IOException {
+    void pushBasedTest3() throws InterruptedException, IOException, ConnectionException {
         String msg = "test6";
         publish(msg);
         ByteString data = pushBasedConsumer.poll(timeout);
@@ -121,14 +121,14 @@ class SystemTest {
 
     @Test
     @Order(9)
-    void pushBasedNullTest() throws InterruptedException, IOException {
+    void pushBasedNullTest() throws InterruptedException, IOException, ConnectionException {
         ByteString data = pushBasedConsumer.poll(0);
         assertNull(data);
     }
 
     @Test
     @Order(10)
-    void pushBasedManyTest() throws IOException, InterruptedException {
+    void pushBasedManyTest() throws IOException, InterruptedException, ConnectionException {
         publishMany();
         for (String msg: messages) {
             ByteString data = pushBasedConsumer.poll(timeout);

@@ -17,7 +17,7 @@ public class Database {
     private static BlockingQueue<ProducerRecord.ProducerMessage> msgQueue;
     private static ConcurrentHashMap<String, ConcurrentLinkedDeque<Connection>> subscribers;
     private static ConcurrentHashMap<String, Long> currentOffsetMap;
-    private static ConcurrentHashMap<String, HashMap<Long, byte[]>> database;
+    private static ConcurrentHashMap<String, ConcurrentHashMap<Long, byte[]>> database;
 
     public static void initializeDatabase() {
         msgQueue = new LinkedBlockingDeque<>();
@@ -46,13 +46,21 @@ public class Database {
         subscribers.put(topic, topicSubscribers);
     }
 
+    public static void removeSubscriber(String topic, Connection connection) {
+        LOGGER.info("Removing subscriber from topic : " + topic);
+        ConcurrentLinkedDeque<Connection> topicSubscribers = subscribers.getOrDefault(topic, null);
+        if (topicSubscribers!=null) {
+            topicSubscribers.remove(connection);
+        }
+    }
+
     public static ConcurrentLinkedDeque<Connection> getSubscribers(String topic){
         return subscribers.getOrDefault(topic, null);
     }
 
     public static Long addRecord(String topic, byte[] data) {
         Long currentOffset = currentOffsetMap.getOrDefault(topic, 0L);
-        HashMap<Long, byte[]> topicMap = database.getOrDefault(topic, new HashMap<>());
+        ConcurrentHashMap<Long, byte[]> topicMap = database.getOrDefault(topic, new ConcurrentHashMap<>());
         topicMap.put(currentOffset, data);
         database.put(topic, topicMap);
         Long lastOffset = currentOffset;
@@ -63,7 +71,7 @@ public class Database {
     }
 
     public static byte[] getRecord(String topic, long requiredOffset) {
-        HashMap<Long, byte[]> topicMap = database.getOrDefault(topic, null);
+        ConcurrentHashMap<Long, byte[]> topicMap = database.getOrDefault(topic, null);
         if (topicMap == null) {
             return null;
         }

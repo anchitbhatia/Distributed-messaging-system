@@ -33,6 +33,8 @@ public class DistributedPubSubApplication {
                     producer.send(topic, line.getBytes());
                     Thread.sleep(50);
                 }
+            } catch (ConnectionException e) {
+                LOGGER.info("Unable to publish, connection closed");
             } catch (IOException | InterruptedException e) {
                 e.printStackTrace();
             }
@@ -79,14 +81,13 @@ public class DistributedPubSubApplication {
                     writer.write(data.toByteArray());
                     writer.write("\n".getBytes());
                 }
-                else{
-                    LOGGER.info("NUll data received");
-                }
             }
         } catch (IOException | InterruptedException e) {
             e.printStackTrace();
+        } catch (ConnectionException e) {
+            LOGGER.info("Connection closed");
         }
-
+        LOGGER.info("Finished reading");
     }
     public static void main(String[] args) {
         try {

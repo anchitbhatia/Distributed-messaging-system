@@ -33,7 +33,11 @@ public class PullBasedConsumer extends Consumer implements Runnable{
                 setOffset(offset).
                 build();
         Any packet = Any.pack(request);
-        brokerConnection.send(packet.toByteArray());
+        try {
+            brokerConnection.send(packet.toByteArray());
+        } catch (ConnectionException e) {
+            this.close();
+        }
     }
 
     @Override
@@ -57,6 +61,12 @@ public class PullBasedConsumer extends Consumer implements Runnable{
                 }
             } catch (IOException | InterruptedException e) {
                 e.printStackTrace();
+            } catch (ConnectionException e) {
+                try {
+                    this.close();
+                } catch (IOException ex) {
+                    ex.printStackTrace();
+                }
             }
         }
     }

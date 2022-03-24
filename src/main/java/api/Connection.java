@@ -1,5 +1,6 @@
 package api;
 
+import utils.ConnectionException;
 import utils.Constants;
 import utils.Node;
 
@@ -8,6 +9,7 @@ import java.io.DataOutputStream;
 import java.io.EOFException;
 import java.io.IOException;
 import java.net.Socket;
+import java.net.SocketException;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.TimeUnit;
@@ -31,10 +33,18 @@ public class Connection {
         sendQueue = new LinkedBlockingDeque<>();
     }
 
+    /***
+     * Method to add record to subscriber's send queue
+     * @param record to be sent to subscriber
+     */
     public void addQueue(byte[] record){
         this.sendQueue.add(record);
     }
 
+    /***
+     * Method to poll subscriber's send queue
+     * @return bytes read from queue
+     */
     public byte[] pollSendQueue() {
         try {
             return this.sendQueue.poll(Constants.POLL_TIMEOUT, TimeUnit.MILLISECONDS);
@@ -43,6 +53,10 @@ public class Connection {
         }
     }
 
+    /***
+     * Method to receive bytes
+     * @return bytes read
+     */
     public byte[] receive(){
         byte[] buffer = null;
         try {
@@ -53,33 +67,50 @@ public class Connection {
             }
         } catch (EOFException ignored) {
         } //No more content available to read
-        catch (IOException exception) {
+        catch (SocketException exception) {
+            return null;
+        } catch (IOException exception) {
             exception.printStackTrace();
         }
         return buffer;
     }
 
-    public boolean send(byte[] message){
+    /***
+     * Method to send bytes
+     * @param message : message to be sent
+     */
+    public void send(byte[] message) throws ConnectionException {
         try {
             if (!this.socket.isClosed()) {
                 this.outputStream.writeInt(message.length);
                 this.outputStream.write(message);
-                return true;
             }
+        } catch (SocketException e) {
+            throw new ConnectionException("Unable to send. Broken pipe.");
         } catch (IOException e) {
             e.printStackTrace();
         }
-        return false;
     }
 
+    /***
+     * Method to get port of the connection
+     * @return port number of the connection
+     */
     public int getPort(){
         return this.node.getPort();
     }
 
+    /***
+     * Method to check if connection is closed
+     * @return true if connection is closed else false
+     */
     public boolean isClosed(){
         return this.socket.isClosed();
     }
 
+    /***
+     * Method to close connection
+     */
     public void close() throws IOException {
         this.inputStream.close();
         this.outputStream.close();

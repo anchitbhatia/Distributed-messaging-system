@@ -9,6 +9,8 @@ import org.apache.logging.log4j.Logger;
 import utils.ConnectionException;
 import utils.Node;
 
+import java.io.IOException;
+
 /***
  * Push based consumer class to create push based consumers
  * @author anchitbhatia
@@ -22,18 +24,37 @@ public class PushBasedConsumer extends Consumer implements Runnable{
         fetchingThread.start();
     }
 
-    protected void subscribeBroker(){
+    protected void subscribeBroker() throws IOException {
         LOGGER.info("Subscribing broker, topic: " + topic);
         Subscribe.SubscribeRequest request = Subscribe.SubscribeRequest.newBuilder().setTopic(topic).build();
         Any packet = Any.pack(request);
-        brokerConnection.send(packet.toByteArray());
+        try {
+            brokerConnection.send(packet.toByteArray());
+        } catch (ConnectionException e) {
+            this.close();
+        }
     }
 
     @Override
     public void run() {
-        this.subscribeBroker();
+        try {
+            this.subscribeBroker();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
         while(!this.isClosed()){
-            ConsumerRecord.Message record = this.fetchBroker();
+            ConsumerRecord.Message record = null;
+            try {
+                record = this.fetchBroker();
+            } catch (IOException e) {
+                e.printStackTrace();
+            } catch (ConnectionException e) {
+                try {
+                    this.close();
+                } catch (IOException ex) {
+                    ex.printStackTrace();
+                }
+            }
             if (record!=null){
                 ByteString data = record.getData();
                 if (data.size() != 0){
