@@ -16,6 +16,12 @@ import java.lang.reflect.Type;
  */
 public class Helper {
 
+    /***
+     * Method to parse arguments
+     * @param args : cmd line arguments
+     * @return ApplicationConfig object
+     * @throws Exception if invalid type or args passed
+     */
     public static ApplicationConfig parseArgs(String[] args) throws Exception {
         if (args.length != 4 || !args[0].equals(Constants.TYPE_FLAG) || !args[2].equals(Constants.CONFIG_FLAG)) {
             throw new Exception("INVALID ARGS");

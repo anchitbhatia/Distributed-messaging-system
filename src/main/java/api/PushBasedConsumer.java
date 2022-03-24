@@ -24,6 +24,10 @@ public class PushBasedConsumer extends Consumer implements Runnable{
         fetchingThread.start();
     }
 
+    /***
+     * Method to subscribe to broker
+     * @throws IOException if unable to close connection
+     */
     protected void subscribeBroker() throws IOException {
         LOGGER.info("Subscribing broker, topic: " + topic);
         Subscribe.SubscribeRequest request = Subscribe.SubscribeRequest.newBuilder().setTopic(topic).build();

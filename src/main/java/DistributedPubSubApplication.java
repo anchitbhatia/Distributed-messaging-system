@@ -20,6 +20,10 @@ import java.util.Objects;
 public class DistributedPubSubApplication {
     private static final Logger LOGGER = LogManager.getLogger("Application");
 
+    /***
+     * Method for producer application
+     * @param config : producer configuration
+     */
     private static void producerNode(ProducerConfig config){
         Node brokerNode = config.getBroker();
         try {
@@ -45,6 +49,10 @@ public class DistributedPubSubApplication {
         }
     }
 
+    /***
+     * Method for broker application
+     * @param config : broker configuration
+     */
     private static void brokerNode(BrokerConfig config) {
         try {
             Broker broker = new Broker(config.getHost().getPort());
@@ -54,6 +62,10 @@ public class DistributedPubSubApplication {
         }
     }
 
+    /***
+     * Method for consumer application
+     * @param config : consumer configuration
+     */
     private static void consumerNode(ConsumerConfig config){
         Node brokerNode = config.getBroker();
         String topic = config.getTopic();
@@ -89,6 +101,7 @@ public class DistributedPubSubApplication {
         }
         LOGGER.info("Finished reading");
     }
+
     public static void main(String[] args) {
         try {
             ApplicationConfig app = Helper.parseArgs(args);

@@ -26,6 +26,11 @@ public class PullBasedConsumer extends Consumer implements Runnable{
         fetchingThread.start();
     }
 
+    /***
+     * Method to request data broker
+     * @param offset : offset to be requested
+     * @throws IOException if unable to close connection
+     */
     protected void requestBroker(Long offset) throws IOException {
         LOGGER.info("Requesting topic: " + this.topic + ", offset: " + offset);
         Request.ConsumerRequest request = Request.ConsumerRequest.newBuilder().

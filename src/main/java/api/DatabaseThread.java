@@ -21,6 +21,9 @@ public class DatabaseThread implements Runnable{
         this.isRunning = true;
     }
 
+    /***
+     * Method to shut down
+     */
     public void shutdown(){
         this.isRunning = false;
     }

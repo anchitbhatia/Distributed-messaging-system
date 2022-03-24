@@ -5,7 +5,6 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import utils.Constants;
 
-import java.util.HashMap;
 import java.util.concurrent.*;
 
 /***
@@ -19,6 +18,9 @@ public class Database {
     private static ConcurrentHashMap<String, Long> currentOffsetMap;
     private static ConcurrentHashMap<String, ConcurrentHashMap<Long, byte[]>> database;
 
+    /***
+     * Method to initialize database
+     */
     public static void initializeDatabase() {
         msgQueue = new LinkedBlockingDeque<>();
         subscribers= new ConcurrentHashMap<>();
@@ -26,11 +28,19 @@ public class Database {
         database = new ConcurrentHashMap<>();
     }
 
+    /***
+     * Method to add producer record to the queue
+     * @param record to be added to database
+     */
     public static void addQueue(ProducerRecord.ProducerMessage record) {
         msgQueue.add(record);
         LOGGER.info("Added msg to queue: " + record.getTopic() + ", data: " + record.getData());
     }
 
+    /***
+     * Method to poll queue holding producer records
+     * @return first record in the queue
+     */
     public static ProducerRecord.ProducerMessage pollMsgQueue() {
         try {
             return msgQueue.poll(Constants.POLL_TIMEOUT, TimeUnit.MILLISECONDS);
@@ -39,6 +49,11 @@ public class Database {
         }
     }
 
+    /***
+     * Method to add push based consumer to subscribers list
+     * @param topic : topic to be subscribed
+     * @param connection : push based consumer connection to be added
+     */
     public static void addSubscriber(String topic, Connection connection){
         LOGGER.info("Adding subscriber to topic : " + topic);
         ConcurrentLinkedDeque<Connection> topicSubscribers = subscribers.getOrDefault(topic, new ConcurrentLinkedDeque<>());
@@ -46,6 +61,11 @@ public class Database {
         subscribers.put(topic, topicSubscribers);
     }
 
+    /***
+     * Method to remove subscriber from the subscribers list
+     * @param topic : topic of the subscriber to be removed
+     * @param connection : push based consumer connection to be removed
+     */
     public static void removeSubscriber(String topic, Connection connection) {
         LOGGER.info("Removing subscriber from topic : " + topic);
         ConcurrentLinkedDeque<Connection> topicSubscribers = subscribers.getOrDefault(topic, null);
@@ -54,10 +74,21 @@ public class Database {
         }
     }
 
+    /***
+     * Method to get list of subscribers
+     * @param topic : topic for which subscribers needed
+     * @return ConcurrentLinkedDeque list of subscribers
+     */
     public static ConcurrentLinkedDeque<Connection> getSubscribers(String topic){
         return subscribers.getOrDefault(topic, null);
     }
 
+    /***
+     * Method to add record in database
+     * @param topic : topic of the record
+     * @param data : data
+     * @return offset
+     */
     public static Long addRecord(String topic, byte[] data) {
         Long currentOffset = currentOffsetMap.getOrDefault(topic, 0L);
         ConcurrentHashMap<Long, byte[]> topicMap = database.getOrDefault(topic, new ConcurrentHashMap<>());
@@ -70,6 +101,12 @@ public class Database {
         return lastOffset;
     }
 
+    /***
+     * Method to get record from database
+     * @param topic : topic of the record
+     * @param requiredOffset : offset of the record
+     * @return record in byte[]
+     */
     public static byte[] getRecord(String topic, long requiredOffset) {
         ConcurrentHashMap<Long, byte[]> topicMap = database.getOrDefault(topic, null);
         if (topicMap == null) {
