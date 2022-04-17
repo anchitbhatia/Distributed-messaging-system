@@ -1,5 +1,6 @@
-package api;
+package api.broker;
 
+import api.Connection;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import utils.Constants;
@@ -8,7 +9,6 @@ import utils.Node;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.Objects;
 
 /***
  * Broker server class
@@ -16,13 +16,14 @@ import java.util.Objects;
  */
 public class Broker {
     private static final Logger LOGGER = LogManager.getLogger(Broker.class);
-    private final Node node;
+    protected final Node node;
     private final String type;
-    private final ServerSocket brokerSocket;
-    private boolean isBrokerRunning;
-    private final DatabaseThread databaseThreadObj;
-    private final Thread brokerThread;
-    private final Thread databaseThread;
+    protected final ServerSocket brokerSocket;
+    protected boolean isBrokerRunning;
+    protected Database database;
+    private DatabaseThread databaseThreadObj;
+    private Thread serverThread;
+    private Thread databaseThread;
 
     // Broker server constructor
 //    public Broker(int port) throws IOException {
@@ -39,19 +40,24 @@ public class Broker {
         this.node = node;
         this.type = type;
         this.brokerSocket = new ServerSocket(node.getPort());
-        this.brokerThread = new Thread(new BrokerServer());
+        this.serverThread = new Thread((Runnable) this);
         this.isBrokerRunning = false;
-        Database.initializeDatabase();
-        this.databaseThreadObj = new DatabaseThread();
+        this.setupDatabase();
+    }
+
+    private void setupDatabase(){
+        this.database = new Database();
+        this.database.initializeDatabase();
+        this.databaseThreadObj = new DatabaseThread(database);
         this.databaseThread = new Thread(databaseThreadObj);
     }
 
     // Method to start server
     public void startServer(){
         this.isBrokerRunning = true;
-        this.brokerThread.start();
         this.databaseThread.start();
-        LOGGER.info("Listening at " + node.getPort());
+        this.serverThread.start();
+        LOGGER.info(this.type + "-" + this.node.getId() + " listening at " + node.getPort());
     }
 
     // Method to shut down server
@@ -61,23 +67,4 @@ public class Broker {
         LOGGER.info("Broker shutdown " + node.getPort());
     }
 
-    // Class to listen for incoming connections
-    private class BrokerServer implements Runnable{
-        @Override
-        public void run() {
-            try {
-                while (isBrokerRunning){
-                    if (type==Constants.TYPE_LEADER) {
-                        Socket clientSocket = brokerSocket.accept();
-                        Connection connection = new Connection(clientSocket);
-                        Thread client = new Thread(new BrokerThread(connection));
-                        client.start();
-                    }
-
-                }
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-    }
 }
