@@ -1,5 +1,7 @@
 package api;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import utils.ConnectionException;
 import utils.Constants;
 import utils.Node;
@@ -19,6 +21,7 @@ import java.util.concurrent.TimeUnit;
  * @author anchitbhatia
  */
 public class Connection {
+    private static final Logger LOGGER = LogManager.getLogger(Connection.class);
     private final Node node;
     private final Socket socket;
     private final DataInputStream inputStream;
@@ -31,6 +34,19 @@ public class Connection {
         this.inputStream = new DataInputStream(socket.getInputStream());
         this.outputStream = new DataOutputStream(socket.getOutputStream());
         sendQueue = new LinkedBlockingDeque<>();
+        LOGGER.info("Connected to " + node);
+    }
+
+    public Connection(Node node) throws IOException {
+        this.node = node;
+        this.socket = new Socket(node.getHostName(), node.getPort());
+        this.inputStream = new DataInputStream(socket.getInputStream());
+        this.outputStream = new DataOutputStream(socket.getOutputStream());
+        sendQueue = new LinkedBlockingDeque<>();
+    }
+
+    public void setNodeId(int id) {
+        this.node.setId(id);
     }
 
     /***
@@ -86,10 +102,15 @@ public class Connection {
                 this.outputStream.write(message);
             }
         } catch (SocketException e) {
+            LOGGER.debug("Broken pipe");
             throw new ConnectionException("Unable to send. Broken pipe.");
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    public Node getNode(){
+        return this.node;
     }
 
     /***
@@ -112,6 +133,7 @@ public class Connection {
      * Method to close connection
      */
     public void close() throws IOException {
+        LOGGER.info("Closing connection " + node);
         this.inputStream.close();
         this.outputStream.close();
         this.socket.close();
