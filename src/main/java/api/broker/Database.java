@@ -1,5 +1,6 @@
-package api;
+package api.broker;
 
+import api.Connection;
 import messages.ProducerRecord;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -13,15 +14,15 @@ import java.util.concurrent.*;
  */
 public class Database {
     private static final Logger LOGGER = LogManager.getLogger(Database.class);
-    private static BlockingQueue<ProducerRecord.ProducerMessage> msgQueue;
-    private static ConcurrentHashMap<String, ConcurrentLinkedDeque<Connection>> subscribers;
-    private static ConcurrentHashMap<String, Long> currentOffsetMap;
-    private static ConcurrentHashMap<String, ConcurrentHashMap<Long, byte[]>> database;
+    private BlockingQueue<ProducerRecord.ProducerMessage> msgQueue;
+    private ConcurrentHashMap<String, ConcurrentLinkedDeque<Connection>> subscribers;
+    private ConcurrentHashMap<String, Long> currentOffsetMap;
+    private ConcurrentHashMap<String, ConcurrentHashMap<Long, byte[]>> database;
 
     /***
      * Method to initialize database
      */
-    public static void initializeDatabase() {
+    public void initializeDatabase() {
         msgQueue = new LinkedBlockingDeque<>();
         subscribers= new ConcurrentHashMap<>();
         currentOffsetMap = new ConcurrentHashMap<>();
@@ -32,7 +33,7 @@ public class Database {
      * Method to add producer record to the queue
      * @param record to be added to database
      */
-    public static void addQueue(ProducerRecord.ProducerMessage record) {
+    public void addQueue(ProducerRecord.ProducerMessage record) {
         msgQueue.add(record);
         LOGGER.info("Added msg to queue: " + record.getTopic() + ", data: " + record.getData());
     }
@@ -41,7 +42,7 @@ public class Database {
      * Method to poll queue holding producer records
      * @return first record in the queue
      */
-    public static ProducerRecord.ProducerMessage pollMsgQueue() {
+    public ProducerRecord.ProducerMessage pollMsgQueue() {
         try {
             return msgQueue.poll(Constants.POLL_TIMEOUT, TimeUnit.MILLISECONDS);
         } catch (InterruptedException e) {
@@ -54,7 +55,7 @@ public class Database {
      * @param topic : topic to be subscribed
      * @param connection : push based consumer connection to be added
      */
-    public static void addSubscriber(String topic, Connection connection){
+    public void addSubscriber(String topic, Connection connection){
         LOGGER.info("Adding subscriber to topic : " + topic);
         ConcurrentLinkedDeque<Connection> topicSubscribers = subscribers.getOrDefault(topic, new ConcurrentLinkedDeque<>());
         topicSubscribers.add(connection);
@@ -66,7 +67,7 @@ public class Database {
      * @param topic : topic of the subscriber to be removed
      * @param connection : push based consumer connection to be removed
      */
-    public static void removeSubscriber(String topic, Connection connection) {
+    public void removeSubscriber(String topic, Connection connection) {
         LOGGER.info("Removing subscriber from topic : " + topic);
         ConcurrentLinkedDeque<Connection> topicSubscribers = subscribers.getOrDefault(topic, null);
         if (topicSubscribers!=null) {
@@ -79,7 +80,7 @@ public class Database {
      * @param topic : topic for which subscribers needed
      * @return ConcurrentLinkedDeque list of subscribers
      */
-    public static ConcurrentLinkedDeque<Connection> getSubscribers(String topic){
+    public ConcurrentLinkedDeque<Connection> getSubscribers(String topic){
         return subscribers.getOrDefault(topic, null);
     }
 
@@ -89,7 +90,7 @@ public class Database {
      * @param data : data
      * @return offset
      */
-    public static Long addRecord(String topic, byte[] data) {
+    public Long addRecord(String topic, byte[] data) {
         Long currentOffset = currentOffsetMap.getOrDefault(topic, 0L);
         ConcurrentHashMap<Long, byte[]> topicMap = database.getOrDefault(topic, new ConcurrentHashMap<>());
         topicMap.put(currentOffset, data);
@@ -107,7 +108,7 @@ public class Database {
      * @param requiredOffset : offset of the record
      * @return record in byte[]
      */
-    public static byte[] getRecord(String topic, long requiredOffset) {
+    public byte[] getRecord(String topic, long requiredOffset) {
         ConcurrentHashMap<Long, byte[]> topicMap = database.getOrDefault(topic, null);
         if (topicMap == null) {
             return null;

@@ -1,5 +1,6 @@
-package api;
+package api.broker;
 
+import api.Connection;
 import com.google.protobuf.Any;
 import com.google.protobuf.ByteString;
 import messages.ConsumerRecord;
@@ -15,9 +16,11 @@ import java.util.concurrent.ConcurrentLinkedDeque;
  */
 public class DatabaseThread implements Runnable{
     private static final Logger LOGGER = LogManager.getLogger(DatabaseThread.class);
+    private Database database;
     private boolean isRunning;
 
-    public DatabaseThread() {
+    public DatabaseThread(Database database) {
+        this.database = database;
         this.isRunning = true;
     }
 
@@ -31,15 +34,15 @@ public class DatabaseThread implements Runnable{
     @Override
     public void run() {
         while (this.isRunning){
-            ProducerRecord.ProducerMessage record = Database.pollMsgQueue();
+            ProducerRecord.ProducerMessage record = this.database.pollMsgQueue();
             while (record == null){
-                record = Database.pollMsgQueue();
+                record = this.database.pollMsgQueue();
             }
             String topic = record.getTopic();
             byte[] data = record.getData().toByteArray();
             LOGGER.debug("Received from Producer, Topic: " + topic + ", Data: " + record.getData());
-            Long offset = Database.addRecord(topic, data);
-            ConcurrentLinkedDeque<Connection> subscribers = Database.getSubscribers(topic);
+            Long offset = this.database.addRecord(topic, data);
+            ConcurrentLinkedDeque<Connection> subscribers = this.database.getSubscribers(topic);
             if (subscribers!=null){
                 for (Connection conn: subscribers) {
                     ConsumerRecord.Message consumerRecord = ConsumerRecord.Message.newBuilder().
