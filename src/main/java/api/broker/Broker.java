@@ -20,10 +20,11 @@ public class Broker {
     private final String type;
     protected final ServerSocket brokerSocket;
     protected boolean isBrokerRunning;
+    private final Thread serverThread;
     protected Database database;
     private DatabaseThread databaseThreadObj;
-    private Thread serverThread;
     private Thread databaseThread;
+    protected final Membership membership;
 
     // Broker server constructor
 //    public Broker(int port) throws IOException {
@@ -43,6 +44,7 @@ public class Broker {
         this.serverThread = new Thread((Runnable) this);
         this.isBrokerRunning = false;
         this.setupDatabase();
+        this.membership = new Membership();
     }
 
     private void setupDatabase(){
@@ -60,11 +62,19 @@ public class Broker {
         LOGGER.info(this.type + "-" + this.node.getId() + " listening at " + node.getPort());
     }
 
+    protected void newMember(Node node){
+        membership.addMember(node);
+    }
+
     // Method to shut down server
     public void shutdown(){
         this.isBrokerRunning = false;
         this.databaseThreadObj.shutdown();
         LOGGER.info("Broker shutdown " + node.getPort());
+    }
+
+    public void printMembers() {
+
     }
 
 }

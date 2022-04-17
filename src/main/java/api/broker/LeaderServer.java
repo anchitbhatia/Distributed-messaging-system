@@ -96,11 +96,11 @@ public class LeaderServer implements Runnable {
     }
 
     private void newFollower(FollowerRequest request) throws IOException {
-        int i = 1;
         Node follower = new Node(request.getHostName(), request.getPort(), request.getId());
         LOGGER.info("Follow request from " + follower);
-        LOGGER.info("Connection Node details " + connection.getNode());
+        this.broker.newMember(follower);
         connection.setNodeId(request.getId());
+        int i = 1;
         while (!connection.isClosed()){
             String msg = "Message " + i;
             BrokerRecord.BrokerMessage record = BrokerRecord.BrokerMessage.newBuilder().
@@ -109,7 +109,7 @@ public class LeaderServer implements Runnable {
                     setOffset(i).
                     build();
             Any packet = Any.pack(record);
-            LOGGER.debug("Sending to follower " + connection.getNode().getId() + " : " + msg);
+            LOGGER.debug("Sending to follower " + follower.getId() + " : " + msg);
             try {
                 connection.send(packet.toByteArray());
                 i++;

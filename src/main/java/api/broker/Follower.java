@@ -91,6 +91,7 @@ public class Follower extends Broker implements Runnable{
             LOGGER.debug("Data thread started");
             try {
                 connectLeader();
+                newMember(leaderNode);
             } catch (IOException e) {
                 e.printStackTrace();
             }
