@@ -1,4 +1,4 @@
-package api;
+package api.consumer;
 
 import com.google.protobuf.Any;
 import com.google.protobuf.ByteString;

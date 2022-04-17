@@ -1,5 +1,6 @@
-package api;
+package api.producer;
 
+import api.Connection;
 import com.google.protobuf.Any;
 import com.google.protobuf.ByteString;
 import org.apache.logging.log4j.LogManager;
