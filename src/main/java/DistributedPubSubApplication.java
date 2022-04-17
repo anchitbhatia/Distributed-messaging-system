@@ -1,4 +1,10 @@
-import api.*;
+import api.broker.Broker;
+import api.broker.Follower;
+import api.broker.Leader;
+import api.consumer.Consumer;
+import api.consumer.PullBasedConsumer;
+import api.consumer.PushBasedConsumer;
+import api.producer.Producer;
 import com.google.protobuf.ByteString;
 import configs.ConsumerConfig;
 import org.apache.logging.log4j.LogManager;
@@ -55,7 +61,13 @@ public class DistributedPubSubApplication {
      */
     private static void brokerNode(BrokerConfig config) {
         try {
-            Broker broker = new Broker(config.getHost().getPort());
+            Broker broker;
+            if (config.isLeader()) {
+                broker = new Leader(config.getHost());
+            }
+            else{
+                broker = new Follower(config.getHost(), config.getLeader());
+            }
             broker.startServer();
         } catch (IOException e) {
             e.printStackTrace();
