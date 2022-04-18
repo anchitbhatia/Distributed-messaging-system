@@ -1,0 +1,11 @@
+syntax = "proto3";
+
+import "protos/node.proto";
+
+option java_package = "messages";
+option java_outer_classname = "HeartBeat";
+
+message HeartBeatMessage{
+  NodeDetails node = 1;
+  repeated NodeDetails members = 2;
+}
