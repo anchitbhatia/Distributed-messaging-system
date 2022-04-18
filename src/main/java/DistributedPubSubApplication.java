@@ -1,6 +1,8 @@
 import api.broker.Broker;
-import api.broker.Follower;
-import api.broker.Leader;
+//import api.broker.BrokerOld;
+//
+//
+//import api.broker.LeaderOld;
 import api.consumer.Consumer;
 import api.consumer.PullBasedConsumer;
 import api.consumer.PushBasedConsumer;
@@ -63,12 +65,12 @@ public class DistributedPubSubApplication {
         try {
             Broker broker;
             if (config.isLeader()) {
-                broker = new Leader(config.getHost());
+                broker = new Broker(config.getHost());
             }
             else{
-                broker = new Follower(config.getHost(), config.getLeader());
+                broker = new Broker(config.getHost(), config.getLeader());
             }
-            broker.startServer();
+            broker.startBroker();
         } catch (IOException e) {
             e.printStackTrace();
         }

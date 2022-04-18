@@ -16,7 +16,7 @@ import java.util.concurrent.ConcurrentLinkedDeque;
  */
 public class DatabaseThread implements Runnable{
     private static final Logger LOGGER = LogManager.getLogger(DatabaseThread.class);
-    private Database database;
+    private final Database database;
     private boolean isRunning;
 
     public DatabaseThread(Database database) {
