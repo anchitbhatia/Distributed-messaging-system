@@ -45,6 +45,16 @@ public class Connection {
         sendQueue = new LinkedBlockingDeque<>();
     }
 
+    public void setNodeFields(Node node) {
+        this.node.setPort(node.getPort());
+        this.node.setId(node.getId());
+    }
+
+    public void setNodeFields(messages.Node.NodeDetails node){
+        this.node.setPort(node.getPort());
+        this.node.setId(node.getId());
+    }
+
     public void setNodeId(int id) {
         this.node.setId(id);
     }
@@ -102,7 +112,7 @@ public class Connection {
                 this.outputStream.write(message);
             }
         } catch (SocketException e) {
-            LOGGER.debug("Broken pipe");
+            LOGGER.error("Broken pipe");
             throw new ConnectionException("Unable to send. Broken pipe.");
         } catch (IOException e) {
             e.printStackTrace();
