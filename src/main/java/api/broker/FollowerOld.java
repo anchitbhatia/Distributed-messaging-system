@@ -5,53 +5,39 @@ import com.google.protobuf.Any;
 import com.google.protobuf.ByteString;
 import com.google.protobuf.InvalidProtocolBufferException;
 import messages.BrokerRecord;
-import messages.BrokerRecord.BrokerMessage;
-import messages.Follower.FollowerRequest;
-import messages.Node.NodeDetails;
-import messages.HeartBeat;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import utils.ConnectionException;
+import utils.Constants;
 import utils.Node;
+import messages.Follower.FollowerRequest;
 
 import java.io.IOException;
+import java.net.Socket;
 
-public class Follower extends BrokerState{
+public class Follower extends BrokerOld implements Runnable{
     private static final Logger LOGGER = LogManager.getLogger(Follower.class);
+    private final Node leaderNode;
     private Connection leaderConnection;
-    private Thread clientThread;
+    private final Thread dataThread;
 
-    public Follower(Broker broker, Node node, Node leader) throws IOException {
-        super(broker, node, leader);
-        this.leaderConnection = null;
-        this.clientThread = new Thread(new ClientThread(), "client");
+    public Follower(Node node, Node leader) throws IOException {
+        super(node, Constants.TYPE_FOLLOWER);
+        this.leaderNode = leader;
+        this.dataThread = new Thread(new DataThread());
     }
 
-    public void startBroker(){
-        super.startBroker();
-        LOGGER.info("Starting clientThread");
-        this.clientThread.start();
+    public void startServer(){
+        super.startServer();
+        this.dataThread.start();
     }
-
-    @Override
-    void handleFollowRequest(ClientHandler clientHandler, messages.Follower.FollowerRequest request) throws IOException {
-
-    }
-
-//    @Override
-//    void handleHeartBeat(ClientHandler clientHandler, HeartBeat.HeartBeatMessage message) {
-//
-//    }
 
     private void connectLeader() throws IOException {
-        this.leaderConnection = new Connection(this.leader);
-        NodeDetails follower = messages.Node.NodeDetails.newBuilder().
+        this.leaderConnection = new Connection(leaderNode);
+        FollowerRequest request = FollowerRequest.newBuilder().
                 setHostName(this.node.getHostName()).
                 setPort(this.node.getPort()).
                 setId(this.node.getId()).
-                build();
-        FollowerRequest request = FollowerRequest.newBuilder().
-                setNode(follower).
                 build();
         Any packet = Any.pack(request);
         try {
@@ -61,12 +47,12 @@ public class Follower extends BrokerState{
         }
     }
 
-    private BrokerMessage fetchLeader() throws IOException, ConnectionException {
-        if (!this.leaderConnection.isClosed()) {
-            byte[] record = this.leaderConnection.receive();
+    private BrokerRecord.BrokerMessage fetchLeader() throws IOException, ConnectionException {
+        if (!leaderConnection.isClosed()) {
+            byte[] record = leaderConnection.receive();
             try {
                 Any packet = Any.parseFrom(record);
-                return packet.unpack(BrokerMessage.class);
+                return packet.unpack(BrokerRecord.BrokerMessage.class);
             } catch (NullPointerException e) {
                 this.close();
                 throw new ConnectionException("Connection closed!");
@@ -77,24 +63,39 @@ public class Follower extends BrokerState{
         return null;
     }
 
-    private void close() throws IOException {
-        LOGGER.info("Closing connection to leader with id " + this.leader.getId());
+    public void close() throws IOException {
+        LOGGER.info("Closing connection to leader with id " + leaderNode.getId());
         this.leaderConnection.close();
     }
 
-    private class ClientThread implements Runnable{
+    @Override
+    public void run() {
+        try {
+            LOGGER.debug("Server started");
+            while (this.isBrokerRunning){
+                Socket clientSocket = this.brokerSocket.accept();
+                Connection connection = new Connection(clientSocket);
+                Thread client = new Thread(new FollowerServer(this, connection));;
+                client.start();
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private class DataThread implements Runnable{
 
         @Override
         public void run() {
             LOGGER.debug("Data thread started");
             try {
                 connectLeader();
-                newMember(leader);
+                newMember(leaderConnection);
             } catch (IOException e) {
                 e.printStackTrace();
             }
             while (!leaderConnection.isClosed()){
-                BrokerMessage record = null;
+                BrokerRecord.BrokerMessage record = null;
                 try {
                     record = fetchLeader();
                     if (record!=null){
@@ -115,8 +116,8 @@ public class Follower extends BrokerState{
                         ex.printStackTrace();
                     }
                 }
+//                LOGGER.debug("Received from leader" + leaderNode.getId() + " : " + Arrays.toString(record));
             }
         }
     }
-
 }

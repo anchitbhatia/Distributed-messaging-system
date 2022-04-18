@@ -1,33 +1,60 @@
 package api.broker;
 
 import api.Connection;
+import com.google.protobuf.Any;
+import com.google.protobuf.ByteString;
+import messages.BrokerRecord.BrokerMessage;
+import messages.Follower.FollowerRequest;
+import messages.Node.NodeDetails;
+import messages.HeartBeat.HeartBeatMessage;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import utils.Constants;
+import utils.ConnectionException;
 import utils.Node;
 
 import java.io.IOException;
-import java.net.Socket;
 
-public class Leader extends Broker implements Runnable{
+public class Leader extends BrokerState{
     private static final Logger LOGGER = LogManager.getLogger(Leader.class);
 
-    public Leader(Node node) throws IOException {
-        super(node, Constants.TYPE_LEADER);
+    public Leader(Broker broker, Node node) throws IOException {
+        super(broker, node, node);
     }
 
     @Override
-    public void run() {
-        try {
-            LOGGER.debug("Server started");
-            while (this.isBrokerRunning){
-                Socket clientSocket = this.brokerSocket.accept();
-                Connection connection = new Connection(clientSocket);
-                Thread client = new Thread(new LeaderServer(this, connection));;
-                client.start();
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
+    void handleFollowRequest(ClientHandler clientHandler, FollowerRequest request) throws IOException {
+        NodeDetails follower = request.getNode();
+        LOGGER.info("Follow request from " + follower);
+        Connection connection = clientHandler.connection;
+        connection.setNodeFields(follower);
+        this.newMember(connection.getNode());
+        int i = 1;
+        while (!connection.isClosed()){
+//            String msg = "Message " + i;
+//            BrokerMessage record = BrokerMessage.newBuilder().
+//                    setTopic("First").
+//                    setData(ByteString.copyFrom(msg.getBytes())).
+//                    setOffset(i).
+//                    build();
+//            Any packet = Any.pack(record);
+//            LOGGER.debug("Sending to follower " + follower.getId() + " : " + msg);
+//            try {
+//                connection.send(packet.toByteArray());
+//                i++;
+//                Thread.sleep(2000);
+//            } catch (ConnectionException e) {
+//                connection.close();
+//                return;
+//            } catch (InterruptedException e) {
+//                e.printStackTrace();
+//            }
+
         }
+
     }
+
+//    @Override
+//    void handleHeartBeat(ClientHandler clientHandler, HeartBeatMessage message) {
+//
+//    }
 }
