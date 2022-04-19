@@ -10,13 +10,15 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public class Membership {
     private static final Logger LOGGER = LogManager.getLogger(Membership.class);
+    private final Broker broker;
 //    private final ConcurrentHashMap<Integer, Connection> heartBeatConnections;
     private ConcurrentHashMap<Integer, Node> members;
 
 //    private ConcurrentLinkedDeque<Node> members;
 
 
-    public Membership() {
+    public Membership(Broker broker) {
+        this.broker = broker;
         this.members = new ConcurrentHashMap<>();
     }
 

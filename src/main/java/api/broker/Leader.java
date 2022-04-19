@@ -17,8 +17,12 @@ import java.io.IOException;
 public class Leader extends BrokerState{
     private static final Logger LOGGER = LogManager.getLogger(Leader.class);
 
-    public Leader(Broker broker, Node node) throws IOException {
-        super(broker, node, node);
+    public Leader(Broker broker) {
+        super(broker);
+    }
+
+    @Override
+    void startBroker() {
     }
 
     @Override

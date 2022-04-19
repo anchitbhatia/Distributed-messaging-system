@@ -21,7 +21,7 @@ public class HeartBeatModule {
     private final Thread heartBeatSender;
 //    private final Thread heartBeatReceiver;
     private boolean isModuleRunning;
-    private ConcurrentHashMap<Node, Connection> heartBeatConnections;
+    private ConcurrentHashMap<Integer, Connection> heartBeatConnections;
 
     public HeartBeatModule(Broker broker) {
         this.broker = broker;
@@ -33,10 +33,6 @@ public class HeartBeatModule {
     public void startModule(){
         this.heartBeatSender.start();
         this.isModuleRunning = true;
-    }
-
-    private HeartBeatMessage generateHeartbeat(){
-
     }
 
     public void stopModule(){
@@ -55,15 +51,15 @@ public class HeartBeatModule {
                 }
 
                 NodeDetails nodeDetails = messages.Node.NodeDetails.newBuilder().
-                        setHostName(broker.state.node.getHostName()).
-                        setPort(broker.state.node.getPort()).
-                        setId(broker.state.node.getId()).
+                        setHostName(broker.node.getHostName()).
+                        setPort(broker.node.getPort()).
+                        setId(broker.node.getId()).
                         build();
 
                 ArrayList<messages.Node.NodeDetails> allNodes = new ArrayList<>();
                 ArrayList<Connection> connections = new ArrayList<>();
 
-                ConcurrentHashMap<Integer, Node> members = broker.state.membership.getMembers();
+                ConcurrentHashMap<Integer, Node> members = broker.membership.getMembers();
 
                 for (Map.Entry<Integer, Node> item : members.entrySet()) {
                     Node node = item.getValue();
@@ -73,38 +69,39 @@ public class HeartBeatModule {
                             setId(node.getId()).
                             build();
                     allNodes.add(memberNode);
-                    if (!heartBeatConnections.containsKey(node)){
+                    if (!heartBeatConnections.containsKey(node.getId())){
                         try {
-                            heartBeatConnections.put(node, new Connection(node));
+                            heartBeatConnections.put(node.getId(), new Connection(node));
                         } catch (IOException e) {
                             e.printStackTrace();
                         }
                     }
-                    connections.add(heartBeatConnections.get(node));
+                    connections.add(heartBeatConnections.get(node.getId()));
                 }
-                messages.Node.NodeDetails currentNode = messages.Node.NodeDetails.newBuilder().
-                        setHostName(broker.state.node.getHostName()).
-                        setPort(broker.state.node.getPort()).
-                        setId(broker.state.node.getId()).
-                        build();
-                allNodes.add(currentNode);
+
+                    messages.Node.NodeDetails currentNode = messages.Node.NodeDetails.newBuilder().
+                            setHostName(broker.node.getHostName()).
+                            setPort(broker.node.getPort()).
+                            setId(broker.node.getId()).
+                            build();
+                if (!allNodes.contains(currentNode)) {
+                    allNodes.add(currentNode);
+                }
 
                 HeartBeatMessage message =  HeartBeatMessage.newBuilder().
                         setNode(nodeDetails).
                         addAllMembers(allNodes).
                         build();
 
-
                 Any packet;
                 for (Connection conn: connections) {
-                    if (item.getKey() == broker.state.node){
-                        LOGGER.debug("Skipping " + item.getKey());
+                    if (conn.getNode().equals(broker.node)){
+                        LOGGER.debug("Skipping " + conn.getNode());
                         continue;
                     }
-                    conn = item.getValue();
                     packet = Any.pack(message);
                     try {
-                        LOGGER.debug("Sending heartbeat to " + conn.getNode());
+                        LOGGER.debug("Sending heartbeat to " + conn.getNode().getId());
                         conn.send(packet.toByteArray());
                     } catch (ConnectionException e) {
                         e.printStackTrace();

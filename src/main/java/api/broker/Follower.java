@@ -21,14 +21,13 @@ public class Follower extends BrokerState{
     private Connection leaderConnection;
     private Thread clientThread;
 
-    public Follower(Broker broker, Node node, Node leader) throws IOException {
-        super(broker, node, leader);
+    public Follower(Broker broker) throws IOException {
+        super(broker);
         this.leaderConnection = null;
         this.clientThread = new Thread(new ClientThread(), "client");
     }
 
     public void startBroker(){
-        super.startBroker();
         LOGGER.info("Starting clientThread");
         this.clientThread.start();
     }
@@ -44,11 +43,11 @@ public class Follower extends BrokerState{
 //    }
 
     private void connectLeader() throws IOException {
-        this.leaderConnection = new Connection(this.leader);
+        this.leaderConnection = new Connection(this.broker.leader);
         NodeDetails follower = messages.Node.NodeDetails.newBuilder().
-                setHostName(this.node.getHostName()).
-                setPort(this.node.getPort()).
-                setId(this.node.getId()).
+                setHostName(this.broker.node.getHostName()).
+                setPort(this.broker.node.getPort()).
+                setId(this.broker.node.getId()).
                 build();
         FollowerRequest request = FollowerRequest.newBuilder().
                 setNode(follower).
@@ -78,7 +77,7 @@ public class Follower extends BrokerState{
     }
 
     private void close() throws IOException {
-        LOGGER.info("Closing connection to leader with id " + this.leader.getId());
+        LOGGER.info("Closing connection to leader with id " + this.broker.leader.getId());
         this.leaderConnection.close();
     }
 
@@ -89,7 +88,7 @@ public class Follower extends BrokerState{
             LOGGER.debug("Data thread started");
             try {
                 connectLeader();
-                newMember(leader);
+                newMember(broker.leader);
             } catch (IOException e) {
                 e.printStackTrace();
             }
