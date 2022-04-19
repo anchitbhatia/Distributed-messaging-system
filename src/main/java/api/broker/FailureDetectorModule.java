@@ -16,7 +16,7 @@ public class FailureDetectorModule {
 
     public FailureDetectorModule(Broker broker) {
         this.broker = broker;
-        this.scheduler = new Scheduler(Constants.FD_SCHEDULER_TIMER);
+        this.scheduler = new Scheduler(Constants.FD_SCHEDULER_TIME);
     }
 
     public void startModule() {
@@ -41,8 +41,14 @@ public class FailureDetectorModule {
                     long difference = TimeUnit.MILLISECONDS.convert(System.nanoTime() - time, TimeUnit.NANOSECONDS);
                     LOGGER.error("Time difference is " + difference);
                     if (difference > Constants.FAILURE_TIMEOUT) {
-                        LOGGER.error("Broker " + id + " seems to be failed");
+                        if (id == broker.leader.getId()) {
+                            LOGGER.error("Leader " + id + " seems to be failed");
+                        }
+                        else {
+                            LOGGER.error("Broker " + id + " seems to be failed");
+                        }
                         LOGGER.error("Time difference is " + difference);
+                        broker.removeMember(id);
                     }
                 }
             }

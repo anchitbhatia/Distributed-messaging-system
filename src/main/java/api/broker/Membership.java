@@ -45,7 +45,12 @@ public class Membership {
     }
 
     public synchronized void removeMember(Node node){
-        members.remove(node.getId());
+        removeMember(node.getId());
+    }
+
+    public synchronized void removeMember(int id) {
+        LOGGER.info("Removing broker " + id);
+        members.remove(id);
     }
 
     public boolean checkMember(Node node){

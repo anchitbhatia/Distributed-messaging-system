@@ -84,4 +84,8 @@ public class Broker {
     protected void addMember(Node node) {
         this.membership.addMember(node);
     }
+
+    protected void removeMember(int id) {
+        this.membership.removeMember(id);
+    }
 }

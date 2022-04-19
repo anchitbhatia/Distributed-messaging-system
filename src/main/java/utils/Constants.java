@@ -22,6 +22,7 @@ public class Constants {
     public static final String PUSH_TYPE = "push";
 
     public static final int POLL_TIMEOUT = 2000;
-    public static final int FD_SCHEDULER_TIMER = 5000;
+    public static final int HB_SCHEDULER_TIME = 2000;
+    public static final int FD_SCHEDULER_TIME = 5000;
     public static final long FAILURE_TIMEOUT = 10000;
 }
