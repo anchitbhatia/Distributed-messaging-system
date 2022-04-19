@@ -1,0 +1,8 @@
+syntax = "proto3";
+
+option java_package = "messages";
+option java_outer_classname = "Ack";
+
+message AckMessage{
+  bool accept = 1;
+}

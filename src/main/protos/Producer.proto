@@ -1,0 +1,13 @@
+syntax = "proto3";
+
+option java_package = "messages";
+option java_outer_classname = "Producer";
+
+message ProducerRequest{
+  string topic = 1;
+}
+
+message ProducerMessage{
+  string topic = 1;
+  bytes data = 2;
+}
