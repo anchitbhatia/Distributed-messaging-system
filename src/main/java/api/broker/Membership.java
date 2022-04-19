@@ -11,10 +11,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public class Membership {
     private static final Logger LOGGER = LogManager.getLogger("MSmodule");
     private final Broker broker;
-//    private final ConcurrentHashMap<Integer, Connection> heartBeatConnections;
     private ConcurrentHashMap<Integer, Node> members;
-
-//    private ConcurrentLinkedDeque<Node> members;
 
 
     public Membership(Broker broker) {
@@ -44,28 +41,22 @@ public class Membership {
         printMembers();
     }
 
-    public synchronized void removeMember(Node node){
+    public void removeMember(Node node){
         removeMember(node.getId());
     }
 
-    public synchronized void removeMember(int id) {
+    protected void removeMember(int id) {
         LOGGER.info("Removing broker " + id);
         members.remove(id);
     }
 
-    public boolean checkMember(Node node){
+    private boolean checkMember(Node node){
         return members.containsKey(node.getId());
     }
 
-
-    public ConcurrentHashMap<Integer, Node> getMembers(){
+    protected ConcurrentHashMap<Integer, Node> getMembers(){
         return members;
     }
-
-//    public ArrayList<Node> getAllNodes(){
-//        ConcurrentHashMap<Node, Node> allMembers = getMembers();
-//        return new ArrayList<>(allMembers.values());
-//    }
 
     private void printMembers() {
         LOGGER.info(getMembers().keySet());
