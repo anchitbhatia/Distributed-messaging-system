@@ -14,7 +14,7 @@ import java.util.concurrent.*;
  */
 public class Database {
     private static final Logger LOGGER = LogManager.getLogger(Database.class);
-    private BlockingQueue<ProducerRecord.ProducerMessage> msgQueue;
+//    private BlockingQueue<ProducerRecord.ProducerMessage> msgQueue;
     private ConcurrentHashMap<String, ConcurrentLinkedDeque<Connection>> subscribers;
     private ConcurrentHashMap<String, Long> currentOffsetMap;
     private ConcurrentHashMap<String, ConcurrentHashMap<Long, byte[]>> database;
@@ -23,32 +23,32 @@ public class Database {
      * Method to initialize database
      */
     public void initializeDatabase() {
-        msgQueue = new LinkedBlockingDeque<>();
+//        msgQueue = new LinkedBlockingDeque<>();
         subscribers= new ConcurrentHashMap<>();
         currentOffsetMap = new ConcurrentHashMap<>();
         database = new ConcurrentHashMap<>();
     }
 
-    /***
-     * Method to add producer record to the queue
-     * @param record to be added to database
-     */
-    public void addQueue(ProducerRecord.ProducerMessage record) {
-        msgQueue.add(record);
-        LOGGER.info("Added msg to queue: " + record.getTopic() + ", data: " + record.getData());
-    }
+//    /***
+//     * Method to add producer record to the queue
+//     * @param record to be added to database
+//     */
+//    public void addQueue(ProducerRecord.ProducerMessage record) {
+//        msgQueue.add(record);
+//        LOGGER.info("Added msg to queue: " + record.getTopic() + ", data: " + record.getData());
+//    }
 
-    /***
-     * Method to poll queue holding producer records
-     * @return first record in the queue
-     */
-    public ProducerRecord.ProducerMessage pollMsgQueue() {
-        try {
-            return msgQueue.poll(Constants.POLL_TIMEOUT, TimeUnit.MILLISECONDS);
-        } catch (InterruptedException e) {
-            return null;
-        }
-    }
+//    /***
+//     * Method to poll queue holding producer records
+//     * @return first record in the queue
+//     */
+//    public ProducerRecord.ProducerMessage pollMsgQueue() {
+//        try {
+//            return msgQueue.poll(Constants.POLL_TIMEOUT, TimeUnit.MILLISECONDS);
+//        } catch (InterruptedException e) {
+//            return null;
+//        }
+//    }
 
     /***
      * Method to add push based consumer to subscribers list
@@ -90,7 +90,7 @@ public class Database {
      * @param data : data
      * @return offset
      */
-    public Long addRecord(String topic, byte[] data) {
+    public Long addMessage(String topic, byte[] data) {
         Long currentOffset = currentOffsetMap.getOrDefault(topic, 0L);
         ConcurrentHashMap<Long, byte[]> topicMap = database.getOrDefault(topic, new ConcurrentHashMap<>());
         topicMap.put(currentOffset, data);

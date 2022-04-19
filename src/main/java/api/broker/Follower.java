@@ -8,9 +8,11 @@ import messages.BrokerRecord.BrokerMessage;
 import messages.Follower.FollowerRequest;
 import messages.Leader.LeaderDetails;
 import messages.Node.NodeDetails;
+import messages.Producer;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import utils.ConnectionException;
+import utils.Constants;
 import utils.Node;
 
 import java.io.IOException;
@@ -31,12 +33,17 @@ public class Follower extends BrokerState{
         this.clientThread.start();
     }
 
+    @Override
+    void handleProducerRequest(Connection connection, Producer.ProducerRequest request) {
+
+    }
+
     private void restartClientThread(){
         this.clientThread.stop();
     }
 
     @Override
-    void handleFollowRequest(ClientHandler clientHandler, messages.Follower.FollowerRequest request) throws IOException {
+    void handleFollowRequest(Connection connection, messages.Follower.FollowerRequest request) throws IOException {
         LeaderDetails leader = LeaderDetails.newBuilder().
                 setHostName(this.broker.leader.getHostName()).
                 setPort(this.broker.leader.getPort()).
@@ -44,12 +51,12 @@ public class Follower extends BrokerState{
                 build();
         Any packet = Any.pack(leader);
         try {
-            clientHandler.connection.send(packet.toByteArray());
+            connection.send(packet.toByteArray());
             LOGGER.info("Sending leader details to " + request.getNode());
         } catch (ConnectionException ignored) {
         } finally {
-            this.broker.addMember(clientHandler.connection.getNode());
-            clientHandler.connection.close();
+            this.broker.addMember(connection.getNode(), new Connection(connection.getNode()), Constants.CONN_TYPE_HB);
+            connection.close();
         }
     }
 
@@ -104,7 +111,7 @@ public class Follower extends BrokerState{
             LOGGER.debug("Data thread started");
             try {
                 connectLeader();
-                broker.addMember(broker.leader);
+                broker.addMember(broker.leader, leaderConnection, Constants.CONN_TYPE_MSG);
             } catch (IOException e) {
                 e.printStackTrace();
             }

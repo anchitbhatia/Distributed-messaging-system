@@ -1,12 +1,20 @@
 package api.broker;
 
 import api.Connection;
+import com.google.protobuf.Any;
+import com.google.protobuf.InvalidProtocolBufferException;
+import messages.Ack;
 import messages.Follower.FollowerRequest;
 import messages.Node.NodeDetails;
+import messages.Producer.ProducerMessage;
+import messages.Producer.ProducerRequest;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import utils.ConnectionException;
+import utils.Constants;
 
 import java.io.IOException;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class Leader extends BrokerState{
     private static final Logger LOGGER = LogManager.getLogger(Leader.class);
@@ -19,13 +27,43 @@ public class Leader extends BrokerState{
     void startBroker() {
     }
 
+    private void receiveMessages(Connection connection) {
+        while(!connection.isClosed()) {
+            byte[] bytes =  connection.receive();
+            if (bytes != null) {
+                try {
+                    ProducerMessage message = Any.parseFrom(bytes).unpack(ProducerMessage.class);
+                    this.broker.addMessage(message);
+                } catch (InvalidProtocolBufferException e) {
+                    e.printStackTrace();
+                }
+            }
+
+        }
+    }
+
     @Override
-    void handleFollowRequest(ClientHandler clientHandler, FollowerRequest request) throws IOException {
+    void handleProducerRequest(Connection connection, ProducerRequest request) {
+        Ack.AckMessage message = Ack.AckMessage.newBuilder().setAccept(true).build();
+        Any packet = Any.pack(message);
+        try {
+            connection.send(packet.toByteArray());
+            receiveMessages(connection);
+        } catch (ConnectionException e) {
+            try {
+                connection.close();
+            } catch (IOException ex) {
+                ex.printStackTrace();
+            }
+        }
+    }
+
+    @Override
+    void handleFollowRequest(Connection connection, FollowerRequest request) throws IOException {
         NodeDetails follower = request.getNode();
         LOGGER.info("Follow request from " + follower.getId());
-        Connection connection = clientHandler.connection;
         connection.setNodeFields(follower);
-        this.broker.addMember(connection.getNode());
+        this.broker.addMember(connection.getNode(), connection, Constants.CONN_TYPE_MSG);
         int i = 1;
         while (!connection.isClosed()){
 //            String msg = "Message " + i;

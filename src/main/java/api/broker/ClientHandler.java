@@ -4,7 +4,7 @@ import api.Connection;
 import com.google.protobuf.Any;
 import messages.Follower.FollowerRequest;
 import messages.HeartBeat.HeartBeatMessage;
-import messages.ProducerRecord.ProducerMessage;
+import messages.Producer.ProducerRequest;
 import messages.Request.ConsumerRequest;
 import messages.Subscribe.SubscribeRequest;
 import org.apache.logging.log4j.LogManager;
@@ -18,7 +18,7 @@ public class ClientHandler implements Runnable{
     private final Broker broker;
     protected final Connection connection;
     private String connectionType;
-    protected int heartBeatCount;
+//    protected int heartBeatCount;
 
     public ClientHandler(Broker broker, Connection connection) {
         this.broker = broker;
@@ -28,8 +28,8 @@ public class ClientHandler implements Runnable{
 
     // Method to set type of connection
     private void setConnectionType(Any packet) {
-        if (packet.is(ProducerMessage.class)) {
-            this.connectionType = Constants.TYPE_MESSAGE;
+        if (packet.is(ProducerRequest.class)) {
+            this.connectionType = Constants.TYPE_PRODUCER;
         } else if (packet.is(ConsumerRequest.class)) {
             this.connectionType = Constants.TYPE_CONSUMER;
         } else if (packet.is(SubscribeRequest.class)) {
@@ -59,8 +59,9 @@ public class ClientHandler implements Runnable{
 //                        case Constants.TYPE_MESSAGE -> this.broker.database.addQueue(packet.unpack(ProducerRecord.ProducerMessage.class));
 //                        case Constants.TYPE_CONSUMER -> serveRequest(packet.unpack(Request.ConsumerRequest.class));
 //                        case Constants.TYPE_SUBSCRIBER -> newSubscriber(packet.unpack(Subscribe.SubscribeRequest.class));
-                        case Constants.TYPE_FOLLOWER -> this.broker.handleFollowRequest(this, packet.unpack(FollowerRequest.class));
-                        case Constants.TYPE_HEARTBEAT ->  this.broker.handleHeartBeat(this, packet.unpack(HeartBeatMessage.class));
+                        case Constants.TYPE_PRODUCER -> this.broker.handleProducerRequest(connection, packet.unpack(ProducerRequest.class));
+                        case Constants.TYPE_FOLLOWER -> this.broker.handleFollowRequest(connection, packet.unpack(FollowerRequest.class));
+                        case Constants.TYPE_HEARTBEAT ->  this.broker.handleHeartBeat(connection, packet.unpack(HeartBeatMessage.class));
                         default -> LOGGER.info("Invalid client");
                     }
                 } catch (IOException e) {

@@ -21,6 +21,9 @@ public class Constants {
     public static final String TYPE_NULL = null;
     public static final String PUSH_TYPE = "push";
 
+    public static final String CONN_TYPE_MSG = "msg";
+    public static final String CONN_TYPE_HB = "msg";
+
     public static final int POLL_TIMEOUT = 2000;
     public static final int HB_SCHEDULER_TIME = 2000;
     public static final int FD_SCHEDULER_TIME = 5000;
