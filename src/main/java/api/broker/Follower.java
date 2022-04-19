@@ -4,15 +4,12 @@ import api.Connection;
 import com.google.protobuf.Any;
 import com.google.protobuf.ByteString;
 import com.google.protobuf.InvalidProtocolBufferException;
-import messages.BrokerRecord;
 import messages.BrokerRecord.BrokerMessage;
 import messages.Follower.FollowerRequest;
 import messages.Node.NodeDetails;
-import messages.HeartBeat;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import utils.ConnectionException;
-import utils.Node;
 
 import java.io.IOException;
 
@@ -88,7 +85,7 @@ public class Follower extends BrokerState{
             LOGGER.debug("Data thread started");
             try {
                 connectLeader();
-                newMember(broker.leader);
+                broker.addMember(broker.leader);
             } catch (IOException e) {
                 e.printStackTrace();
             }

@@ -18,22 +18,6 @@ public abstract class BrokerState {
         this.broker = broker;
     }
 
-    protected void newMember(Node node) {
-        this.broker.membership.addMember(node);
-    }
-
-    protected void handleHeartBeat(ClientHandler clientHandler, HeartBeatMessage message) {
-        clientHandler.heartBeatCount++;
-        NodeDetails node = message.getNode();
-        clientHandler.connection.setNodeFields(node);
-        LOGGER.info("Heartbeat received from " + node.getId());
-        LOGGER.info("Members received: " + message.getMembersList().size());
-//        if (clientHandler.heartBeatCount > 10) {
-//            this.broker.membership.replaceMembers(message.getMembersList());
-//            clientHandler.heartBeatCount = 0;
-//        }
-    }
-
     abstract void startBroker();
 
     abstract void handleFollowRequest(ClientHandler clientHandler, FollowerRequest request) throws IOException;

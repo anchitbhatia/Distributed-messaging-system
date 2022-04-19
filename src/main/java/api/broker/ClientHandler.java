@@ -59,8 +59,8 @@ public class ClientHandler implements Runnable{
 //                        case Constants.TYPE_MESSAGE -> this.broker.database.addQueue(packet.unpack(ProducerRecord.ProducerMessage.class));
 //                        case Constants.TYPE_CONSUMER -> serveRequest(packet.unpack(Request.ConsumerRequest.class));
 //                        case Constants.TYPE_SUBSCRIBER -> newSubscriber(packet.unpack(Subscribe.SubscribeRequest.class));
-                        case Constants.TYPE_FOLLOWER -> this.broker.state.handleFollowRequest(this, packet.unpack(FollowerRequest.class));
-                        case Constants.TYPE_HEARTBEAT ->  this.broker.state.handleHeartBeat(this, packet.unpack(HeartBeatMessage.class));
+                        case Constants.TYPE_FOLLOWER -> this.broker.handleFollowRequest(this, packet.unpack(FollowerRequest.class));
+                        case Constants.TYPE_HEARTBEAT ->  this.broker.handleHeartBeat(this, packet.unpack(HeartBeatMessage.class));
                         default -> LOGGER.info("Invalid client");
                     }
                 } catch (IOException e) {

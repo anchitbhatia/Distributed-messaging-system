@@ -54,7 +54,7 @@ public class Membership {
 
 
     public ConcurrentHashMap<Integer, Node> getMembers(){
-        return  members;
+        return members;
     }
 
 //    public ArrayList<Node> getAllNodes(){
@@ -63,6 +63,6 @@ public class Membership {
 //    }
 
     private void printMembers() {
-        LOGGER.info(getMembers());
+        LOGGER.info(getMembers().keys());
     }
 }

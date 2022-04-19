@@ -10,7 +10,6 @@ import utils.ConnectionException;
 import utils.Node;
 
 import java.io.IOException;
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -22,18 +21,33 @@ public class HeartBeatModule {
 //    private final Thread heartBeatReceiver;
     private boolean isModuleRunning;
     private ConcurrentHashMap<Integer, Connection> heartBeatConnections;
+    private ConcurrentHashMap<Integer, Long> heartBeatReceiveTimes;
 
     public HeartBeatModule(Broker broker) {
         this.broker = broker;
         this.heartBeatSender = new Thread(new Sender(), "HB Sender");
         this.isModuleRunning = false;
         this.heartBeatConnections = new ConcurrentHashMap<>();
+        this.heartBeatReceiveTimes = new ConcurrentHashMap<>();
     }
 
     public void startModule(){
         this.heartBeatSender.start();
         this.isModuleRunning = true;
     }
+
+    public void parseHeartBeat(HeartBeatMessage message) {
+        int id = message.getNode().getId();
+        long time = System.nanoTime();
+        this.heartBeatReceiveTimes.put(id, time);
+        LOGGER.info("Heartbeat received from " + id);
+        LOGGER.info("Members received: " + message.getMembersList().size());
+    }
+
+    public ConcurrentHashMap<Integer, Long> getHeartBeatReceiveTimes(){
+        return heartBeatReceiveTimes;
+    }
+
 
     public void stopModule(){
         this.isModuleRunning = false;

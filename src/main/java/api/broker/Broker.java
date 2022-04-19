@@ -1,6 +1,8 @@
 package api.broker;
 
 import api.Connection;
+import messages.HeartBeat.HeartBeatMessage;
+import messages.Follower.FollowerRequest;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import utils.Node;
@@ -19,7 +21,8 @@ public class Broker {
     private final ServerSocket serverSocket;
     private final Thread serverThread;
     protected final Membership membership;
-    private final HeartBeatModule heartBeatModule;
+    protected final HeartBeatModule heartBeatModule;
+    protected final FailureDetectorModule failureDetectorModule;
 
     public Broker(Node node) throws IOException {
         this(node, node);
@@ -51,6 +54,7 @@ public class Broker {
         }, "server");
         this.membership = new Membership(this);
         this.heartBeatModule = new HeartBeatModule(this);
+        this.failureDetectorModule = new FailureDetectorModule(this);
     }
 
     public void startBroker(){
@@ -59,5 +63,25 @@ public class Broker {
         this.serverThread.start();
         this.state.startBroker();
         this.heartBeatModule.startModule();
+        this.failureDetectorModule.startModule();
+    }
+
+    protected void handleFollowRequest(ClientHandler clientHandler, FollowerRequest request) throws IOException {
+        this.state.handleFollowRequest(clientHandler, request);
+    }
+
+    protected void handleHeartBeat(ClientHandler clientHandler, HeartBeatMessage message) {
+        clientHandler.heartBeatCount++;
+        messages.Node.NodeDetails node = message.getNode();
+        clientHandler.connection.setNodeFields(node);
+        this.heartBeatModule.parseHeartBeat(message);
+//        if (clientHandler.heartBeatCount > 10) {
+//            this.broker.membership.replaceMembers(message.getMembersList());
+//            clientHandler.heartBeatCount = 0;
+//        }
+    }
+
+    protected void addMember(Node node) {
+        this.membership.addMember(node);
     }
 }
