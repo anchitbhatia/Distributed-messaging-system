@@ -6,10 +6,12 @@ import com.google.protobuf.ByteString;
 import com.google.protobuf.InvalidProtocolBufferException;
 import messages.BrokerRecord.BrokerMessage;
 import messages.Follower.FollowerRequest;
+import messages.Leader.LeaderDetails;
 import messages.Node.NodeDetails;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import utils.ConnectionException;
+import utils.Node;
 
 import java.io.IOException;
 
@@ -29,9 +31,34 @@ public class Follower extends BrokerState{
         this.clientThread.start();
     }
 
+    private void restartClientThread(){
+        this.clientThread.stop();
+    }
+
     @Override
     void handleFollowRequest(ClientHandler clientHandler, messages.Follower.FollowerRequest request) throws IOException {
+        LeaderDetails leader = LeaderDetails.newBuilder().
+                setHostName(this.broker.leader.getHostName()).
+                setPort(this.broker.leader.getPort()).
+                setId(this.broker.leader.getId()).
+                build();
+        Any packet = Any.pack(leader);
+        try {
+            clientHandler.connection.send(packet.toByteArray());
+            LOGGER.info("Sending leader details to " + request.getNode());
+        } catch (ConnectionException ignored) {
+        } finally {
+            this.broker.addMember(clientHandler.connection.getNode());
+            clientHandler.connection.close();
+        }
+    }
 
+    @Override
+    void handleLeaderDetails(LeaderDetails leaderDetails) throws IOException {
+        Node newLeader = new Node(leaderDetails.getHostName(), leaderDetails.getPort(), leaderDetails.getId());
+        LOGGER.info("Received details of leader " + newLeader.getId());
+        this.broker.setNewLeader(newLeader);
+        this.broker.changeState(new Follower(this.broker));
     }
 
 //    @Override
@@ -57,24 +84,16 @@ public class Follower extends BrokerState{
         }
     }
 
-    private BrokerMessage fetchLeader() throws IOException, ConnectionException {
+    private Any fetchLeader() throws InvalidProtocolBufferException {
         if (!this.leaderConnection.isClosed()) {
             byte[] record = this.leaderConnection.receive();
-            try {
-                Any packet = Any.parseFrom(record);
-                return packet.unpack(BrokerMessage.class);
-            } catch (NullPointerException e) {
-                this.close();
-                throw new ConnectionException("Connection closed!");
-            } catch (InvalidProtocolBufferException e) {
-                e.printStackTrace();
-            }
+            return Any.parseFrom(record);
         }
         return null;
     }
 
     private void close() throws IOException {
-        LOGGER.info("Closing connection to leader with id " + this.broker.leader.getId());
+        LOGGER.info("Closing connection to broker with id " + this.broker.leader.getId());
         this.leaderConnection.close();
     }
 
@@ -89,30 +108,30 @@ public class Follower extends BrokerState{
             } catch (IOException e) {
                 e.printStackTrace();
             }
-            while (!leaderConnection.isClosed()){
-                BrokerMessage record = null;
+            while (!leaderConnection.isClosed()) {
+                Any record = null;
                 try {
                     record = fetchLeader();
-                    if (record!=null){
-                        ByteString data = record.getData();
-                        if (data.size() != 0){
-                            LOGGER.info("Received data: " + data.toStringUtf8());
-                        }
-                        else{
-                            Thread.sleep(1000);
+                    if (record != null) {
+                        if (record.is(BrokerMessage.class)) {
+                            ByteString data = record.unpack(BrokerMessage.class).getData();
+                            if (data.size() != 0) {
+                                LOGGER.info("Received data: " + data.toStringUtf8());
+                            } else {
+                                Thread.sleep(1000);
+                            }
+                        } else if (record.is(LeaderDetails.class)) {
+                            close();
+                            handleLeaderDetails(record.unpack(LeaderDetails.class));
                         }
                     }
-                }catch (IOException | InterruptedException e) {
-                    e.printStackTrace();
-                } catch (ConnectionException e) {
-                    try {
+                    else{
                         close();
-                    } catch (IOException ex) {
-                        ex.printStackTrace();
                     }
+                } catch (IOException | InterruptedException e) {
+                    e.printStackTrace();
                 }
             }
         }
     }
-
 }

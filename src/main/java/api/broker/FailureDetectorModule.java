@@ -10,7 +10,7 @@ import java.util.TimerTask;
 import java.util.concurrent.TimeUnit;
 
 public class FailureDetectorModule {
-    private static final Logger LOGGER = LogManager.getLogger(FailureDetectorModule.class);
+    private static final Logger LOGGER = LogManager.getLogger("FDmodule");
     private final Broker broker;
     private final Scheduler scheduler;
 
@@ -30,27 +30,29 @@ public class FailureDetectorModule {
     private class FailureDetectorTask extends TimerTask {
         @Override
         public void run() {
-            LOGGER.info("Failure detector task started");
+            LOGGER.info("Detecting failures");
             Map<Integer, Long> receiveTimes = broker.heartBeatModule.getHeartBeatReceiveTimes();
-            LOGGER.info("Receive times " + receiveTimes);
-            LOGGER.info("Current time " + System.nanoTime());
+            boolean failureDetected = false;
             if (receiveTimes!=null) {
                 for (Map.Entry<Integer, Long> entry : receiveTimes.entrySet()) {
                     Integer id = entry.getKey();
                     Long time = entry.getValue();
                     long difference = TimeUnit.MILLISECONDS.convert(System.nanoTime() - time, TimeUnit.NANOSECONDS);
-                    LOGGER.error("Time difference is " + difference);
                     if (difference > Constants.FAILURE_TIMEOUT) {
+                        failureDetected = true;
                         if (id == broker.leader.getId()) {
                             LOGGER.error("Leader " + id + " seems to be failed");
                         }
                         else {
                             LOGGER.error("Broker " + id + " seems to be failed");
                         }
-                        LOGGER.error("Time difference is " + difference);
+//                        LOGGER.error("Time difference is " + difference);
                         broker.removeMember(id);
                     }
                 }
+            }
+            if (!failureDetected) {
+                LOGGER.info("No failure detected");
             }
             scheduler.scheduleTask(new FailureDetectorTask());
         }

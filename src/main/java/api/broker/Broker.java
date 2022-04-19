@@ -3,6 +3,7 @@ package api.broker;
 import api.Connection;
 import messages.HeartBeat.HeartBeatMessage;
 import messages.Follower.FollowerRequest;
+import messages.Leader.LeaderDetails;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import utils.Node;
@@ -58,7 +59,7 @@ public class Broker {
     }
 
     public void startBroker(){
-        LOGGER.info("Starting broker as " + this.getClass());
+        LOGGER.info("Starting broker as " + this.state.getClass().getName());
         this.isBrokerRunning = true;
         this.serverThread.start();
         this.state.startBroker();
@@ -66,7 +67,18 @@ public class Broker {
         this.failureDetectorModule.startModule();
     }
 
+    public void setNewLeader(Node leader) {
+        LOGGER.warn("Setting new leader " + leader.getId());
+        this.leader = leader;
+    }
+
+    protected void changeState(BrokerState newState) {
+        this.state = newState;
+        this.state.startBroker();
+    }
+
     protected void handleFollowRequest(ClientHandler clientHandler, FollowerRequest request) throws IOException {
+        clientHandler.connection.setNodeFields(request.getNode());
         this.state.handleFollowRequest(clientHandler, request);
     }
 
@@ -87,5 +99,6 @@ public class Broker {
 
     protected void removeMember(int id) {
         this.membership.removeMember(id);
+        this.heartBeatModule.removeMember(id);
     }
 }

@@ -22,7 +22,7 @@ public class Leader extends BrokerState{
     @Override
     void handleFollowRequest(ClientHandler clientHandler, FollowerRequest request) throws IOException {
         NodeDetails follower = request.getNode();
-        LOGGER.info("Follow request from " + follower);
+        LOGGER.info("Follow request from " + follower.getId());
         Connection connection = clientHandler.connection;
         connection.setNodeFields(follower);
         this.broker.addMember(connection.getNode());
@@ -48,6 +48,11 @@ public class Leader extends BrokerState{
 //            }
 
         }
+
+    }
+
+    @Override
+    void handleLeaderDetails(messages.Leader.LeaderDetails leaderDetails) throws IOException {
 
     }
 

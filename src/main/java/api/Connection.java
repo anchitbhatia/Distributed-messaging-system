@@ -34,7 +34,6 @@ public class Connection {
         this.inputStream = new DataInputStream(socket.getInputStream());
         this.outputStream = new DataOutputStream(socket.getOutputStream());
         sendQueue = new LinkedBlockingDeque<>();
-        LOGGER.info("Connected to " + node);
     }
 
     public Connection(Node node) throws IOException {

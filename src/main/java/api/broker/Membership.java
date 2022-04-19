@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class Membership {
-    private static final Logger LOGGER = LogManager.getLogger(Membership.class);
+    private static final Logger LOGGER = LogManager.getLogger("MSmodule");
     private final Broker broker;
 //    private final ConcurrentHashMap<Integer, Connection> heartBeatConnections;
     private ConcurrentHashMap<Integer, Node> members;
@@ -68,6 +68,6 @@ public class Membership {
 //    }
 
     private void printMembers() {
-        LOGGER.info(getMembers().keys());
+        LOGGER.info(getMembers().keySet());
     }
 }

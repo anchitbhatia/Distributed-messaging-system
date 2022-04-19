@@ -18,7 +18,7 @@ import java.util.TimerTask;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class HeartBeatModule {
-    private static final Logger LOGGER = LogManager.getLogger(HeartBeatModule.class);
+    private static final Logger LOGGER = LogManager.getLogger("HBmodule");
     private final Broker broker;
     private final ConcurrentHashMap<Integer, Connection> heartBeatConnections;
     private final ConcurrentHashMap<Integer, Long> heartBeatReceiveTimes;
@@ -31,6 +31,11 @@ public class HeartBeatModule {
         this.scheduler = new Scheduler(Constants.HB_SCHEDULER_TIME);
     }
 
+    protected synchronized void removeMember(int id) {
+        heartBeatReceiveTimes.remove(id);
+        heartBeatConnections.remove(id);
+    }
+
     public void startModule(){
         this.scheduler.scheduleTask(new HeartBeatSenderTask());
     }
@@ -39,8 +44,8 @@ public class HeartBeatModule {
         int id = message.getNode().getId();
         long time = System.nanoTime();
         this.heartBeatReceiveTimes.put(id, time);
-        LOGGER.info("Heartbeat received from " + id);
-        LOGGER.info("Members received: " + message.getMembersList().size());
+        LOGGER.info("Heartbeat received from " + id + ", members : " + message.getMembersList().size());
+//        LOGGER.info("Members received: " + message.getMembersList().size());
     }
 
     public ConcurrentHashMap<Integer, Long> getHeartBeatReceiveTimes(){
@@ -54,7 +59,7 @@ public class HeartBeatModule {
     private class HeartBeatSenderTask extends TimerTask {
         @Override
         public void run() {
-            LOGGER.info("Heartbeat sender task started");
+//            LOGGER.info("Heartbeat sender task started");
             NodeDetails nodeDetails = messages.Node.NodeDetails.newBuilder().
                     setHostName(broker.node.getHostName()).
                     setPort(broker.node.getPort()).
@@ -108,7 +113,7 @@ public class HeartBeatModule {
                 }
                 packet = Any.pack(message);
                 try {
-                    LOGGER.debug("Sending heartbeat to " + conn.getNode().getId());
+//                    LOGGER.debug("Sending heartbeat to " + conn.getNode().getId());
                     conn.send(packet.toByteArray());
                 } catch (ConnectionException e) {
                     e.printStackTrace();
