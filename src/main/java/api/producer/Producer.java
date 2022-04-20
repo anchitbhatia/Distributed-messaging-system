@@ -3,6 +3,7 @@ package api.producer;
 import api.Connection;
 import com.google.protobuf.Any;
 import com.google.protobuf.ByteString;
+import messages.Message;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import utils.Node;
@@ -38,8 +39,12 @@ public class Producer {
     public void send(String topic, byte[] data) throws IOException, ConnectionException {
         if (!brokerConnection.isClosed()) {
             LOGGER.info("Publishing topic: " + topic + ", length: " + data.length);
-            ProducerRecord.ProducerMessage msg = ProducerRecord.ProducerMessage.newBuilder().setTopic(topic).setData(ByteString.copyFrom(data)).build();
-            Any packet = Any.pack(msg);
+            Message.MessageDetails msg = Message.MessageDetails.newBuilder().
+                    setTopic(topic).
+                    setData(ByteString.copyFrom(data)).
+                    build();
+            messages.Producer.ProducerMessage message = messages.Producer.ProducerMessage.newBuilder().setDetails(msg).build();
+            Any packet = Any.pack(message);
             try {
                 brokerConnection.send(packet.toByteArray());
             } catch (ConnectionException e) {

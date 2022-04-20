@@ -43,7 +43,7 @@ public class DistributedPubSubApplication {
                 while ((line = br.readLine()) != null) {
                     LOGGER.info("Publishing, data: " + line);
                     producer.send(topic, line.getBytes());
-                    Thread.sleep(50);
+                    Thread.sleep(1000);
                 }
             } catch (ConnectionException e) {
                 LOGGER.info("Unable to publish, connection closed");
