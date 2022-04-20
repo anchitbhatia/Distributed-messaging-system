@@ -1,5 +1,7 @@
 syntax = "proto3";
 
+import "protos/message.proto";
+
 option java_package = "messages";
 option java_outer_classname = "Producer";
 
@@ -8,6 +10,5 @@ message ProducerRequest{
 }
 
 message ProducerMessage{
-  string topic = 1;
-  bytes data = 2;
+  MessageDetails details = 1;
 }

@@ -587,22 +587,19 @@ public final class Producer {
       com.google.protobuf.MessageOrBuilder {
 
     /**
-     * <code>string topic = 1;</code>
-     * @return The topic.
+     * <code>.MessageDetails details = 1;</code>
+     * @return Whether the details field is set.
      */
-    java.lang.String getTopic();
+    boolean hasDetails();
     /**
-     * <code>string topic = 1;</code>
-     * @return The bytes for topic.
+     * <code>.MessageDetails details = 1;</code>
+     * @return The details.
      */
-    com.google.protobuf.ByteString
-        getTopicBytes();
-
+    messages.Message.MessageDetails getDetails();
     /**
-     * <code>bytes data = 2;</code>
-     * @return The data.
+     * <code>.MessageDetails details = 1;</code>
      */
-    com.google.protobuf.ByteString getData();
+    messages.Message.MessageDetailsOrBuilder getDetailsOrBuilder();
   }
   /**
    * Protobuf type {@code ProducerMessage}
@@ -617,8 +614,6 @@ public final class Producer {
       super(builder);
     }
     private ProducerMessage() {
-      topic_ = "";
-      data_ = com.google.protobuf.ByteString.EMPTY;
     }
 
     @java.lang.Override
@@ -652,14 +647,16 @@ public final class Producer {
               done = true;
               break;
             case 10: {
-              java.lang.String s = input.readStringRequireUtf8();
+              messages.Message.MessageDetails.Builder subBuilder = null;
+              if (details_ != null) {
+                subBuilder = details_.toBuilder();
+              }
+              details_ = input.readMessage(messages.Message.MessageDetails.parser(), extensionRegistry);
+              if (subBuilder != null) {
+                subBuilder.mergeFrom(details_);
+                details_ = subBuilder.buildPartial();
+              }
 
-              topic_ = s;
-              break;
-            }
-            case 18: {
-
-              data_ = input.readBytes();
               break;
             }
             default: {
@@ -694,53 +691,30 @@ public final class Producer {
               messages.Producer.ProducerMessage.class, messages.Producer.ProducerMessage.Builder.class);
     }
 
-    public static final int TOPIC_FIELD_NUMBER = 1;
-    private volatile java.lang.Object topic_;
+    public static final int DETAILS_FIELD_NUMBER = 1;
+    private messages.Message.MessageDetails details_;
     /**
-     * <code>string topic = 1;</code>
-     * @return The topic.
+     * <code>.MessageDetails details = 1;</code>
+     * @return Whether the details field is set.
      */
     @java.lang.Override
-    public java.lang.String getTopic() {
-      java.lang.Object ref = topic_;
-      if (ref instanceof java.lang.String) {
-        return (java.lang.String) ref;
-      } else {
-        com.google.protobuf.ByteString bs = 
-            (com.google.protobuf.ByteString) ref;
-        java.lang.String s = bs.toStringUtf8();
-        topic_ = s;
-        return s;
-      }
+    public boolean hasDetails() {
+      return details_ != null;
     }
     /**
-     * <code>string topic = 1;</code>
-     * @return The bytes for topic.
+     * <code>.MessageDetails details = 1;</code>
+     * @return The details.
      */
     @java.lang.Override
-    public com.google.protobuf.ByteString
-        getTopicBytes() {
-      java.lang.Object ref = topic_;
-      if (ref instanceof java.lang.String) {
-        com.google.protobuf.ByteString b = 
-            com.google.protobuf.ByteString.copyFromUtf8(
-                (java.lang.String) ref);
-        topic_ = b;
-        return b;
-      } else {
-        return (com.google.protobuf.ByteString) ref;
-      }
+    public messages.Message.MessageDetails getDetails() {
+      return details_ == null ? messages.Message.MessageDetails.getDefaultInstance() : details_;
     }
-
-    public static final int DATA_FIELD_NUMBER = 2;
-    private com.google.protobuf.ByteString data_;
     /**
-     * <code>bytes data = 2;</code>
-     * @return The data.
+     * <code>.MessageDetails details = 1;</code>
      */
     @java.lang.Override
-    public com.google.protobuf.ByteString getData() {
-      return data_;
+    public messages.Message.MessageDetailsOrBuilder getDetailsOrBuilder() {
+      return getDetails();
     }
 
     private byte memoizedIsInitialized = -1;
@@ -757,11 +731,8 @@ public final class Producer {
     @java.lang.Override
     public void writeTo(com.google.protobuf.CodedOutputStream output)
                         throws java.io.IOException {
-      if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(topic_)) {
-        com.google.protobuf.GeneratedMessageV3.writeString(output, 1, topic_);
-      }
-      if (!data_.isEmpty()) {
-        output.writeBytes(2, data_);
+      if (details_ != null) {
+        output.writeMessage(1, getDetails());
       }
       unknownFields.writeTo(output);
     }
@@ -772,12 +743,9 @@ public final class Producer {
       if (size != -1) return size;
 
       size = 0;
-      if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(topic_)) {
-        size += com.google.protobuf.GeneratedMessageV3.computeStringSize(1, topic_);
-      }
-      if (!data_.isEmpty()) {
+      if (details_ != null) {
         size += com.google.protobuf.CodedOutputStream
-          .computeBytesSize(2, data_);
+          .computeMessageSize(1, getDetails());
       }
       size += unknownFields.getSerializedSize();
       memoizedSize = size;
@@ -794,10 +762,11 @@ public final class Producer {
       }
       messages.Producer.ProducerMessage other = (messages.Producer.ProducerMessage) obj;
 
-      if (!getTopic()
-          .equals(other.getTopic())) return false;
-      if (!getData()
-          .equals(other.getData())) return false;
+      if (hasDetails() != other.hasDetails()) return false;
+      if (hasDetails()) {
+        if (!getDetails()
+            .equals(other.getDetails())) return false;
+      }
       if (!unknownFields.equals(other.unknownFields)) return false;
       return true;
     }
@@ -809,10 +778,10 @@ public final class Producer {
       }
       int hash = 41;
       hash = (19 * hash) + getDescriptor().hashCode();
-      hash = (37 * hash) + TOPIC_FIELD_NUMBER;
-      hash = (53 * hash) + getTopic().hashCode();
-      hash = (37 * hash) + DATA_FIELD_NUMBER;
-      hash = (53 * hash) + getData().hashCode();
+      if (hasDetails()) {
+        hash = (37 * hash) + DETAILS_FIELD_NUMBER;
+        hash = (53 * hash) + getDetails().hashCode();
+      }
       hash = (29 * hash) + unknownFields.hashCode();
       memoizedHashCode = hash;
       return hash;
@@ -946,10 +915,12 @@ public final class Producer {
       @java.lang.Override
       public Builder clear() {
         super.clear();
-        topic_ = "";
-
-        data_ = com.google.protobuf.ByteString.EMPTY;
-
+        if (detailsBuilder_ == null) {
+          details_ = null;
+        } else {
+          details_ = null;
+          detailsBuilder_ = null;
+        }
         return this;
       }
 
@@ -976,8 +947,11 @@ public final class Producer {
       @java.lang.Override
       public messages.Producer.ProducerMessage buildPartial() {
         messages.Producer.ProducerMessage result = new messages.Producer.ProducerMessage(this);
-        result.topic_ = topic_;
-        result.data_ = data_;
+        if (detailsBuilder_ == null) {
+          result.details_ = details_;
+        } else {
+          result.details_ = detailsBuilder_.build();
+        }
         onBuilt();
         return result;
       }
@@ -1026,12 +1000,8 @@ public final class Producer {
 
       public Builder mergeFrom(messages.Producer.ProducerMessage other) {
         if (other == messages.Producer.ProducerMessage.getDefaultInstance()) return this;
-        if (!other.getTopic().isEmpty()) {
-          topic_ = other.topic_;
-          onChanged();
-        }
-        if (other.getData() != com.google.protobuf.ByteString.EMPTY) {
-          setData(other.getData());
+        if (other.hasDetails()) {
+          mergeDetails(other.getDetails());
         }
         this.mergeUnknownFields(other.unknownFields);
         onChanged();
@@ -1062,114 +1032,123 @@ public final class Producer {
         return this;
       }
 
-      private java.lang.Object topic_ = "";
+      private messages.Message.MessageDetails details_;
+      private com.google.protobuf.SingleFieldBuilderV3<
+          messages.Message.MessageDetails, messages.Message.MessageDetails.Builder, messages.Message.MessageDetailsOrBuilder> detailsBuilder_;
       /**
-       * <code>string topic = 1;</code>
-       * @return The topic.
+       * <code>.MessageDetails details = 1;</code>
+       * @return Whether the details field is set.
        */
-      public java.lang.String getTopic() {
-        java.lang.Object ref = topic_;
-        if (!(ref instanceof java.lang.String)) {
-          com.google.protobuf.ByteString bs =
-              (com.google.protobuf.ByteString) ref;
-          java.lang.String s = bs.toStringUtf8();
-          topic_ = s;
-          return s;
+      public boolean hasDetails() {
+        return detailsBuilder_ != null || details_ != null;
+      }
+      /**
+       * <code>.MessageDetails details = 1;</code>
+       * @return The details.
+       */
+      public messages.Message.MessageDetails getDetails() {
+        if (detailsBuilder_ == null) {
+          return details_ == null ? messages.Message.MessageDetails.getDefaultInstance() : details_;
         } else {
-          return (java.lang.String) ref;
+          return detailsBuilder_.getMessage();
         }
       }
       /**
-       * <code>string topic = 1;</code>
-       * @return The bytes for topic.
+       * <code>.MessageDetails details = 1;</code>
        */
-      public com.google.protobuf.ByteString
-          getTopicBytes() {
-        java.lang.Object ref = topic_;
-        if (ref instanceof String) {
-          com.google.protobuf.ByteString b = 
-              com.google.protobuf.ByteString.copyFromUtf8(
-                  (java.lang.String) ref);
-          topic_ = b;
-          return b;
+      public Builder setDetails(messages.Message.MessageDetails value) {
+        if (detailsBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          details_ = value;
+          onChanged();
         } else {
-          return (com.google.protobuf.ByteString) ref;
+          detailsBuilder_.setMessage(value);
         }
-      }
-      /**
-       * <code>string topic = 1;</code>
-       * @param value The topic to set.
-       * @return This builder for chaining.
-       */
-      public Builder setTopic(
-          java.lang.String value) {
-        if (value == null) {
-    throw new NullPointerException();
-  }
-  
-        topic_ = value;
-        onChanged();
-        return this;
-      }
-      /**
-       * <code>string topic = 1;</code>
-       * @return This builder for chaining.
-       */
-      public Builder clearTopic() {
-        
-        topic_ = getDefaultInstance().getTopic();
-        onChanged();
-        return this;
-      }
-      /**
-       * <code>string topic = 1;</code>
-       * @param value The bytes for topic to set.
-       * @return This builder for chaining.
-       */
-      public Builder setTopicBytes(
-          com.google.protobuf.ByteString value) {
-        if (value == null) {
-    throw new NullPointerException();
-  }
-  checkByteStringIsUtf8(value);
-        
-        topic_ = value;
-        onChanged();
-        return this;
-      }
 
-      private com.google.protobuf.ByteString data_ = com.google.protobuf.ByteString.EMPTY;
-      /**
-       * <code>bytes data = 2;</code>
-       * @return The data.
-       */
-      @java.lang.Override
-      public com.google.protobuf.ByteString getData() {
-        return data_;
-      }
-      /**
-       * <code>bytes data = 2;</code>
-       * @param value The data to set.
-       * @return This builder for chaining.
-       */
-      public Builder setData(com.google.protobuf.ByteString value) {
-        if (value == null) {
-    throw new NullPointerException();
-  }
-  
-        data_ = value;
-        onChanged();
         return this;
       }
       /**
-       * <code>bytes data = 2;</code>
-       * @return This builder for chaining.
+       * <code>.MessageDetails details = 1;</code>
        */
-      public Builder clearData() {
+      public Builder setDetails(
+          messages.Message.MessageDetails.Builder builderForValue) {
+        if (detailsBuilder_ == null) {
+          details_ = builderForValue.build();
+          onChanged();
+        } else {
+          detailsBuilder_.setMessage(builderForValue.build());
+        }
+
+        return this;
+      }
+      /**
+       * <code>.MessageDetails details = 1;</code>
+       */
+      public Builder mergeDetails(messages.Message.MessageDetails value) {
+        if (detailsBuilder_ == null) {
+          if (details_ != null) {
+            details_ =
+              messages.Message.MessageDetails.newBuilder(details_).mergeFrom(value).buildPartial();
+          } else {
+            details_ = value;
+          }
+          onChanged();
+        } else {
+          detailsBuilder_.mergeFrom(value);
+        }
+
+        return this;
+      }
+      /**
+       * <code>.MessageDetails details = 1;</code>
+       */
+      public Builder clearDetails() {
+        if (detailsBuilder_ == null) {
+          details_ = null;
+          onChanged();
+        } else {
+          details_ = null;
+          detailsBuilder_ = null;
+        }
+
+        return this;
+      }
+      /**
+       * <code>.MessageDetails details = 1;</code>
+       */
+      public messages.Message.MessageDetails.Builder getDetailsBuilder() {
         
-        data_ = getDefaultInstance().getData();
         onChanged();
-        return this;
+        return getDetailsFieldBuilder().getBuilder();
+      }
+      /**
+       * <code>.MessageDetails details = 1;</code>
+       */
+      public messages.Message.MessageDetailsOrBuilder getDetailsOrBuilder() {
+        if (detailsBuilder_ != null) {
+          return detailsBuilder_.getMessageOrBuilder();
+        } else {
+          return details_ == null ?
+              messages.Message.MessageDetails.getDefaultInstance() : details_;
+        }
+      }
+      /**
+       * <code>.MessageDetails details = 1;</code>
+       */
+      private com.google.protobuf.SingleFieldBuilderV3<
+          messages.Message.MessageDetails, messages.Message.MessageDetails.Builder, messages.Message.MessageDetailsOrBuilder> 
+          getDetailsFieldBuilder() {
+        if (detailsBuilder_ == null) {
+          detailsBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
+              messages.Message.MessageDetails, messages.Message.MessageDetails.Builder, messages.Message.MessageDetailsOrBuilder>(
+                  getDetails(),
+                  getParentForChildren(),
+                  isClean());
+          details_ = null;
+        }
+        return detailsBuilder_;
       }
       @java.lang.Override
       public final Builder setUnknownFields(
@@ -1243,14 +1222,16 @@ public final class Producer {
       descriptor;
   static {
     java.lang.String[] descriptorData = {
-      "\n\025protos/Producer.proto\" \n\017ProducerReque" +
-      "st\022\r\n\005topic\030\001 \001(\t\".\n\017ProducerMessage\022\r\n\005" +
-      "topic\030\001 \001(\t\022\014\n\004data\030\002 \001(\014B\024\n\010messagesB\010P" +
-      "roducerb\006proto3"
+      "\n\025protos/Producer.proto\032\024protos/message." +
+      "proto\" \n\017ProducerRequest\022\r\n\005topic\030\001 \001(\t\"" +
+      "3\n\017ProducerMessage\022 \n\007details\030\001 \001(\0132\017.Me" +
+      "ssageDetailsB\024\n\010messagesB\010Producerb\006prot" +
+      "o3"
     };
     descriptor = com.google.protobuf.Descriptors.FileDescriptor
       .internalBuildGeneratedFileFrom(descriptorData,
         new com.google.protobuf.Descriptors.FileDescriptor[] {
+          messages.Message.getDescriptor(),
         });
     internal_static_ProducerRequest_descriptor =
       getDescriptor().getMessageTypes().get(0);
@@ -1263,7 +1244,8 @@ public final class Producer {
     internal_static_ProducerMessage_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_ProducerMessage_descriptor,
-        new java.lang.String[] { "Topic", "Data", });
+        new java.lang.String[] { "Details", });
+    messages.Message.getDescriptor();
   }
 
   // @@protoc_insertion_point(outer_class_scope)
