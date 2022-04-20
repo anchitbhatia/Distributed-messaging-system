@@ -1,15 +1,14 @@
 package api.broker;
 
 import api.Connection;
-import messages.Node.NodeDetails;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import utils.Constants;
 import utils.Node;
 
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 public class Membership {
     private static final Logger LOGGER = LogManager.getLogger("MSmodule");
@@ -48,31 +47,40 @@ public class Membership {
             } else if (Objects.equals(connType, Constants.CONN_TYPE_HB)) {
                 hbConnections.put(node.getId(), conn);
             }
+            LOGGER.debug("New member added " + node);
+            printMembers();
         }
-        LOGGER.debug("New member added " + node);
-        printMembers();
     }
 
-    public void removeMember(Node node){
-        removeMember(node.getId());
-    }
+//    public void removeMember(Node node){
+//        removeMember(node.getId());
+//    }
 
     protected synchronized void removeMember(int id) {
         LOGGER.info("Removing broker " + id);
-        members.remove(id);
-        msgConnections.remove(id);
-        hbConnections.remove(id);
+        this.members.remove(id);
+        this.msgConnections.remove(id);
+        this.hbConnections.remove(id);
+        this.printMembers();
     }
 
     private boolean checkMember(Node node){
-        return members.containsKey(node.getId());
+        return this.members.containsKey(node.getId());
     }
 
-    protected ConcurrentHashMap<Integer, Node> getMembers(){
-        return members;
+    protected List<Node> getMembers(){
+        return new CopyOnWriteArrayList<>(this.members.values());
+    }
+
+    protected List<Connection> getMsgConnections() {
+        return new CopyOnWriteArrayList<>(this.msgConnections.values());
+    }
+
+    protected List<Connection> getHbConnections() {
+        return new CopyOnWriteArrayList<>(this.hbConnections.values());
     }
 
     private void printMembers() {
-        LOGGER.info(getMembers().keySet());
+        LOGGER.info(this.members.keySet());
     }
 }

@@ -3,8 +3,8 @@ package api.broker;
 import api.Connection;
 import messages.HeartBeat.HeartBeatMessage;
 import messages.Follower.FollowerRequest;
+import messages.Message.MessageDetails;
 import messages.Producer.ProducerMessage;
-import messages.Producer.ProducerRequest;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import utils.Constants;
@@ -13,7 +13,9 @@ import utils.Node;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 public class Broker {
     private static final Logger LOGGER = LogManager.getLogger(Broker.class);
@@ -57,6 +59,7 @@ public class Broker {
             }
         }, "server");
         this.database = new Database();
+        this.database.initializeDatabase();
         this.membership = new Membership(this);
         this.heartBeatModule = new HeartBeatModule(this);
         this.failureDetectorModule = new FailureDetectorModule(this);
@@ -90,15 +93,23 @@ public class Broker {
         this.heartBeatModule.removeMember(id);
     }
 
-    protected void addConnection(int id, Connection connection, String type) {
-
-    }
-
-    protected void addMessage(ProducerMessage message) {
+    protected void addMessage(MessageDetails message) {
         this.database.addMessage(message.getTopic(), message.getData().toByteArray());
     }
 
-    protected void handleProducerRequest(Connection connection, ProducerRequest request) {
+    protected List<Connection> getMsgConnections() {
+        return this.membership.getMsgConnections();
+    }
+
+    protected List<Connection> getHbConnections() {
+        return this.membership.getHbConnections();
+    }
+
+    protected List<Node> getMembers() {
+        return this.membership.getMembers();
+    }
+
+    protected void handleProducerRequest(Connection connection, ProducerMessage request) {
         this.state.handleProducerRequest(connection, request);
     }
 

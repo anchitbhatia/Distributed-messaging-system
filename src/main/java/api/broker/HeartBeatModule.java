@@ -13,6 +13,7 @@ import utils.Scheduler;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.TimerTask;
 import java.util.concurrent.ConcurrentHashMap;
@@ -20,20 +21,20 @@ import java.util.concurrent.ConcurrentHashMap;
 public class HeartBeatModule {
     private static final Logger LOGGER = LogManager.getLogger("HBmodule");
     private final Broker broker;
-    private final ConcurrentHashMap<Integer, Connection> heartBeatConnections;
+//    private final ConcurrentHashMap<Integer, Connection> heartBeatConnections;
     private final ConcurrentHashMap<Integer, Long> heartBeatReceiveTimes;
     private final Scheduler scheduler;
 
     public HeartBeatModule(Broker broker) {
         this.broker = broker;
-        this.heartBeatConnections = new ConcurrentHashMap<>();
+//        this.heartBeatConnections = new ConcurrentHashMap<>();
         this.heartBeatReceiveTimes = new ConcurrentHashMap<>();
         this.scheduler = new Scheduler(Constants.HB_SCHEDULER_TIME);
     }
 
     protected synchronized void removeMember(int id) {
         heartBeatReceiveTimes.remove(id);
-        heartBeatConnections.remove(id);
+//        heartBeatConnections.remove(id);
     }
 
     public void startModule(){
@@ -44,7 +45,7 @@ public class HeartBeatModule {
         int id = message.getNode().getId();
         long time = System.nanoTime();
         this.heartBeatReceiveTimes.put(id, time);
-        LOGGER.info("Heartbeat received from " + id + ", members : " + message.getMembersList().size());
+        LOGGER.info("Heartbeat received from " + id + ", members: " + message.getMembersList().size());
 //        LOGGER.info("Members received: " + message.getMembersList().size());
     }
 
@@ -68,26 +69,25 @@ public class HeartBeatModule {
 
             ArrayList<messages.Node.NodeDetails> allNodes = new ArrayList<>();
 
-            ArrayList<Connection> connections = new ArrayList<>();
+//            ArrayList<Connection> connections = new ArrayList<>();
 
-            ConcurrentHashMap<Integer, Node> members = broker.membership.getMembers();
+            List<Node> members = broker.getMembers();
 
-            for (Map.Entry<Integer, Node> item : members.entrySet()) {
-                Node node = item.getValue();
+            for (Node node : members) {
                 messages.Node.NodeDetails memberNode = messages.Node.NodeDetails.newBuilder().
                         setHostName(node.getHostName()).
                         setPort(node.getPort()).
                         setId(node.getId()).
                         build();
                 allNodes.add(memberNode);
-                if (!heartBeatConnections.containsKey(node.getId())){
-                    try {
-                        heartBeatConnections.put(node.getId(), new Connection(node));
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-                }
-                connections.add(heartBeatConnections.get(node.getId()));
+//                if (!heartBeatConnections.containsKey(node.getId())){
+//                    try {
+//                        heartBeatConnections.put(node.getId(), new Connection(node));
+//                    } catch (IOException e) {
+//                        e.printStackTrace();
+//                    }
+//                }
+//                connections.add(heartBeatConnections.get(node.getId()));
             }
 
                 messages.Node.NodeDetails currentNode = messages.Node.NodeDetails.newBuilder().
@@ -105,18 +105,19 @@ public class HeartBeatModule {
                     addAllMembers(allNodes).
                     build();
 
-            Any packet;
-            for (Connection conn: connections) {
+            List<Connection> hbConnections = broker.getHbConnections();
+
+            for (Connection conn: hbConnections) {
                 if (conn.getNode().equals(broker.node)){
                     LOGGER.debug("Skipping " + conn.getNode());
                     continue;
                 }
-                packet = Any.pack(message);
+                Any packet = Any.pack(message);
                 try {
 //                    LOGGER.debug("Sending heartbeat to " + conn.getNode().getId());
                     conn.send(packet.toByteArray());
                 } catch (ConnectionException e) {
-                    e.printStackTrace();
+                    broker.removeMember(conn.getNode().getId());
                 }
             }
             scheduler.scheduleTask(new HeartBeatSenderTask());

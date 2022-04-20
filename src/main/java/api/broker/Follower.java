@@ -7,8 +7,10 @@ import com.google.protobuf.InvalidProtocolBufferException;
 import messages.BrokerRecord.BrokerMessage;
 import messages.Follower.FollowerRequest;
 import messages.Leader.LeaderDetails;
+import messages.Message;
 import messages.Node.NodeDetails;
 import messages.Producer;
+import messages.Replicate.ReplicateMessage;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import utils.ConnectionException;
@@ -34,12 +36,12 @@ public class Follower extends BrokerState{
     }
 
     @Override
-    void handleProducerRequest(Connection connection, Producer.ProducerRequest request) {
+    void handleProducerRequest(Connection connection, Producer.ProducerMessage request) {
 
     }
 
     private void restartClientThread(){
-        this.clientThread.stop();
+//        this.clientThread.stop();
     }
 
     @Override
@@ -120,13 +122,14 @@ public class Follower extends BrokerState{
                 try {
                     record = fetchLeader();
                     if (record != null) {
-                        if (record.is(BrokerMessage.class)) {
-                            ByteString data = record.unpack(BrokerMessage.class).getData();
-                            if (data.size() != 0) {
-                                LOGGER.info("Received data: " + data.toStringUtf8());
-                            } else {
-                                Thread.sleep(1000);
-                            }
+                        if (record.is(ReplicateMessage.class)) {
+                            Message.MessageDetails message = record.unpack(ReplicateMessage.class).getDetails();
+                            broker.addMessage(message);
+//                            if (message.size() != 0) {
+//                                LOGGER.info("Received data: " + data.toStringUtf8());
+//                            } else {
+//                                Thread.sleep(1000);
+//                            }
                         } else if (record.is(LeaderDetails.class)) {
                             close();
                             handleLeaderDetails(record.unpack(LeaderDetails.class));
@@ -135,7 +138,7 @@ public class Follower extends BrokerState{
                     else{
                         close();
                     }
-                } catch (IOException | InterruptedException e) {
+                } catch (IOException e) {
                     e.printStackTrace();
                 }
             }

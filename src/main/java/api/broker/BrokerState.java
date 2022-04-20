@@ -5,6 +5,7 @@ import messages.Follower.FollowerRequest;
 import messages.HeartBeat.HeartBeatMessage;
 import messages.Leader.LeaderDetails;
 import messages.Node.NodeDetails;
+import messages.Producer;
 import messages.Producer.ProducerRequest;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -22,7 +23,7 @@ public abstract class BrokerState {
 
     abstract void startBroker();
 
-    abstract void handleProducerRequest(Connection connection, ProducerRequest request);
+    abstract void handleProducerRequest(Connection connection, Producer.ProducerMessage request);
 
     abstract void handleFollowRequest(Connection connection, FollowerRequest request) throws IOException;
 
