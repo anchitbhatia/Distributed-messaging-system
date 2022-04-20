@@ -23,7 +23,7 @@ public abstract class BrokerState {
 
     abstract void startBroker();
 
-    abstract void handleProducerRequest(Connection connection, Producer.ProducerMessage request);
+    abstract void handleProducerRequest(Connection connection, Producer.ProducerRequest request);
 
     abstract void handleFollowRequest(Connection connection, FollowerRequest request) throws IOException;
 

@@ -30,7 +30,7 @@ public class ClientHandler implements Runnable{
 
     // Method to set type of connection
     private void setConnectionType(Any packet) {
-        if (packet.is(Producer.ProducerMessage.class)) {
+        if (packet.is(Producer.ProducerRequest.class)) {
             this.connectionType = Constants.TYPE_PRODUCER;
         } else if (packet.is(ConsumerRequest.class)) {
             this.connectionType = Constants.TYPE_CONSUMER;
@@ -61,7 +61,7 @@ public class ClientHandler implements Runnable{
 //                        case Constants.TYPE_MESSAGE -> this.broker.database.addQueue(packet.unpack(ProducerRecord.ProducerMessage.class));
 //                        case Constants.TYPE_CONSUMER -> serveRequest(packet.unpack(Request.ConsumerRequest.class));
 //                        case Constants.TYPE_SUBSCRIBER -> newSubscriber(packet.unpack(Subscribe.SubscribeRequest.class));
-                        case Constants.TYPE_PRODUCER -> this.broker.handleProducerRequest(connection, packet.unpack(Producer.ProducerMessage.class));
+                        case Constants.TYPE_PRODUCER -> this.broker.handleProducerRequest(connection, packet.unpack(Producer.ProducerRequest.class));
                         case Constants.TYPE_FOLLOWER -> this.broker.handleFollowRequest(connection, packet.unpack(FollowerRequest.class));
                         case Constants.TYPE_HEARTBEAT ->  this.broker.handleHeartBeat(connection, packet.unpack(HeartBeatMessage.class));
                         default -> LOGGER.info("Invalid client");

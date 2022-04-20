@@ -4,7 +4,7 @@ import api.Connection;
 import messages.HeartBeat.HeartBeatMessage;
 import messages.Follower.FollowerRequest;
 import messages.Message.MessageDetails;
-import messages.Producer.ProducerMessage;
+import messages.Producer.ProducerRequest;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import utils.Constants;
@@ -109,7 +109,7 @@ public class Broker {
         return this.membership.getMembers();
     }
 
-    protected void handleProducerRequest(Connection connection, ProducerMessage request) {
+    protected void handleProducerRequest(Connection connection, ProducerRequest request) {
         this.state.handleProducerRequest(connection, request);
     }
 

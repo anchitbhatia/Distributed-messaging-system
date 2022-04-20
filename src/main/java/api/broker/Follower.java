@@ -36,7 +36,7 @@ public class Follower extends BrokerState{
     }
 
     @Override
-    void handleProducerRequest(Connection connection, Producer.ProducerMessage request) {
+    void handleProducerRequest(Connection connection, Producer.ProducerRequest request) {
 
     }
 

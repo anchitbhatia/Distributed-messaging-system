@@ -3,6 +3,8 @@ package api.producer;
 import api.Connection;
 import com.google.protobuf.Any;
 import com.google.protobuf.ByteString;
+import com.google.protobuf.InvalidProtocolBufferException;
+import messages.Ack;
 import messages.Message;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -29,6 +31,31 @@ public class Producer {
         }
     }
 
+    private Ack.AckMessage receiveAck() throws InvalidProtocolBufferException {
+        byte[] bytes =  this.brokerConnection.receive();
+        Ack.AckMessage message = null;
+        if (bytes != null) {
+            message = Any.parseFrom(bytes).unpack(Ack.AckMessage.class);
+        }
+        return message;
+    }
+
+    public boolean sendRequest(String topic) throws ConnectionException, IOException {
+        messages.Producer.ProducerRequest request = messages.Producer.ProducerRequest.newBuilder().setTopic(topic).build();
+        Any packet = Any.pack(request);
+        try {
+            this.brokerConnection.send(packet.toByteArray());
+            Ack.AckMessage message = this.receiveAck();
+            if (message!=null) {
+                return message.getAccept();
+            }
+        } catch (ConnectionException | InvalidProtocolBufferException e) {
+                this.close();
+                throw e;
+        }
+        return false;
+    }
+
     /***
      * Method to send data to broker
      * @param topic : topic of the data
@@ -36,8 +63,8 @@ public class Producer {
      * @throws IOException if unable to close connection
      * @throws ConnectionException if connection is closed
      */
-    public void send(String topic, byte[] data) throws IOException, ConnectionException {
-        if (!brokerConnection.isClosed()) {
+    public void send(String topic, byte[] data) throws ConnectionException, IOException {
+        if (!this.brokerConnection.isClosed()) {
             LOGGER.info("Publishing topic: " + topic + ", length: " + data.length);
             Message.MessageDetails msg = Message.MessageDetails.newBuilder().
                     setTopic(topic).
@@ -46,8 +73,13 @@ public class Producer {
             messages.Producer.ProducerMessage message = messages.Producer.ProducerMessage.newBuilder().setDetails(msg).build();
             Any packet = Any.pack(message);
             try {
-                brokerConnection.send(packet.toByteArray());
-            } catch (ConnectionException e) {
+                this.brokerConnection.send(packet.toByteArray());
+                Ack.AckMessage ackMessage = this.receiveAck();
+                if (ackMessage==null || !ackMessage.getAccept()) {
+                    throw new ConnectionException("Request declined");
+                }
+                LOGGER.debug("Ack received");
+            } catch (ConnectionException | InvalidProtocolBufferException e) {
                 this.close();
                 throw e;
             }
