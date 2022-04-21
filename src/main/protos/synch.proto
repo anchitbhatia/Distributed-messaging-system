@@ -1,0 +1,15 @@
+syntax = "proto3";
+
+import "protos/node.proto";
+
+option java_package = "messages";
+option java_outer_classname = "Synchronization";
+
+message SyncRequest{
+  NodeDetails node = 1;
+}
+
+message Snapshot{
+  map<string, uint64> currentOffsets = 1;
+}
+

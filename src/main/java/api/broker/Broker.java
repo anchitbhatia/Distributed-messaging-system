@@ -1,6 +1,8 @@
 package api.broker;
 
 import api.Connection;
+import com.google.protobuf.Any;
+import com.google.protobuf.ByteString;
 import messages.HeartBeat.HeartBeatMessage;
 import messages.Follower.FollowerRequest;
 import messages.Message;
@@ -9,13 +11,13 @@ import messages.Message.MessageDetails;
 import messages.Producer.ProducerRequest;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import utils.ConnectionException;
 import utils.Constants;
 import utils.Node;
 
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -32,7 +34,7 @@ public class Broker {
     protected final Membership membership;
     protected final HeartBeatModule heartBeatModule;
     protected final FailureDetectorModule failureDetectorModule;
-    protected final SynchronizationModule synchronizationModule;
+    protected final Synchronization synchronization;
 
     public Broker(Node node) throws IOException {
         this(node, node);
@@ -67,16 +69,17 @@ public class Broker {
         this.membership = new Membership(this);
         this.heartBeatModule = new HeartBeatModule(this);
         this.failureDetectorModule = new FailureDetectorModule(this);
-        this.synchronizationModule = new SynchronizationModule(this);
+        this.synchronization = new Synchronization(this);
     }
 
     public void startBroker(){
         LOGGER.info("Starting broker as " + this.state.getClass().getName());
         this.isBrokerRunning = true;
+        this.heartBeatModule.startModule();
+        this.failureDetectorModule.startModule();
         this.serverThread.start();
         this.state.startBroker();
-//        this.heartBeatModule.startModule();
-//        this.failureDetectorModule.startModule();
+
     }
 
     public void setNewLeader(Node leader) {
@@ -98,8 +101,13 @@ public class Broker {
         this.heartBeatModule.removeMember(id);
     }
 
-    protected void addMessage(MessageDetails message) {
-        this.database.addMessage(message.getTopic(), message.getData().toByteArray(), message.getOffset());
+    protected Long addMessage(MessageDetails message, String type) {
+
+        if (!(Objects.equals(type, Constants.TYPE_SYNC)) && this.synchronization.isSyncing()) {
+            this.synchronization.bufferMessage(message);
+            return null;
+        }
+        return this.database.addMessage(message.getTopic(), message.getData().toByteArray(), message.getOffset());
     }
 
     protected Long addMessage(NewMessage message) {
@@ -122,43 +130,45 @@ public class Broker {
         return this.database.getCurrentOffsetSnapshot();
     }
 
-//    protected void initiateSync(Connection connection, String type) {
-//        if (Objects.equals(type, Constants.SYNC_SEND)) {
-//            this.synchronizationModule.initiateSend(connection);
-//        }
-//    }
+    protected void initiateSync(Connection connection, String type) {
+        if (Objects.equals(type, Constants.SYNC_SEND)) {
+            this.synchronization.startSender(connection);
+        }
+        else if (Objects.equals(type, Constants.SYNC_RECEIVE)) {
+            this.synchronization.startReceiver(this.leader);
+        }
+    }
 
-//    protected void serveMessageRequest(Request.ConsumerRequest request) throws IOException {
-//        String topic = request.getTopic();
-//        long offset = request.getOffset();
-//        LOGGER.debug("Consumer requested, topic: " + topic + ", offset: " + offset);
-//        byte[] data = this.broker.database.getRecord(topic, offset);
-//        ConsumerRecord.Message record;
-//        if (data != null) {
-//            record = ConsumerRecord.Message.newBuilder().
-//                    setOffset(offset).
-//                    setData(ByteString.copyFrom(data)).
-//                    build();
-//            LOGGER.debug("Responding to consumer, topic: " + topic + ", data: " + ByteString.copyFrom(data));
-//        } else {
-//            data = new byte[0];
-//            record = ConsumerRecord.Message.newBuilder().
-//                    setOffset(offset).
-//                    setData(ByteString.copyFrom(data))
-//                    .build();
-//            LOGGER.debug("Responding to consumer, topic: " + topic + ", data: null");
-//        }
-//        Any packet = Any.pack(record);
-//        try {
-//            connection.send(packet.toByteArray());
-//        } catch (ConnectionException e) {
-//            connection.close();
-//            LOGGER.debug("Unable to send to consumer, topic: " + topic + ", offset: " + offset);
-//            return;
-//        }
-//        LOGGER.debug("Sent to consumer, topic: " + topic + ", offset: " + offset);
-//    }
-//    }
+    protected void serveMessageRequest(Connection connection, Message.MessageRequest request) throws IOException {
+        String topic = request.getTopic();
+        long offset = request.getOffset();
+        LOGGER.info("Message request | topic: " + topic + ", offset: " + offset);
+        byte[] data = this.database.getRecord(topic, offset);
+        MessageDetails details;
+        if (data != null) {
+            details = MessageDetails.newBuilder().
+                    setTopic(topic).
+                    setData(ByteString.copyFrom(data)).
+                    setOffset(offset).
+                    build();
+        } else {
+            data = new byte[0];
+            details = MessageDetails.newBuilder().
+                    setTopic(topic).
+                    setData(ByteString.copyFrom(data)).
+                    setOffset(offset).
+                    build();
+        }
+        Any packet = Any.pack(details);
+        try {
+            connection.send(packet.toByteArray());
+        } catch (ConnectionException e) {
+            connection.close();
+            LOGGER.error("Unable to send | topic: " + topic + ", offset: " + offset);
+            return;
+        }
+        LOGGER.info("Sent | topic: " + topic + ", offset: " + offset);
+    }
 
     protected void handleProducerRequest(Connection connection, ProducerRequest request) {
         this.state.handleProducerRequest(connection, request);
@@ -179,5 +189,9 @@ public class Broker {
 //            this.broker.membership.replaceMembers(message.getMembersList());
 //            clientHandler.heartBeatCount = 0;
 //        }
+    }
+
+    protected void handleSyncRequest(Connection connection, messages.Synchronization.SyncRequest request) {
+        this.state.handleSyncRequest(connection, request);
     }
 }
