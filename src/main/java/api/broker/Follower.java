@@ -25,16 +25,19 @@ public class Follower extends BrokerState{
     private static final Logger LOGGER = LogManager.getLogger(Follower.class);
     private Connection leaderConnection;
     private Thread clientThread;
+    private Thread syncThread;
 
     public Follower(Broker broker) throws IOException {
         super(broker);
         this.leaderConnection = null;
         this.clientThread = new Thread(new ClientThread(), "client");
+        this.syncThread = new Thread(() -> broker.initiateSync(null, Constants.SYNC_RECEIVE));
     }
 
     public void startBroker(){
         LOGGER.info("Starting clientThread");
         this.clientThread.start();
+        this.syncThread.start();
     }
 
     @Override
@@ -121,6 +124,7 @@ public class Follower extends BrokerState{
             try {
                 connectLeader();
                 broker.addMember(broker.leader, leaderConnection, Constants.CONN_TYPE_MSG);
+                broker.addMember(broker.leader, new Connection(broker.leader), Constants.CONN_TYPE_HB);
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -132,7 +136,7 @@ public class Follower extends BrokerState{
                         if (record.is(ReplicateMessage.class)) {
                             ReplicateMessage packet = record.unpack(ReplicateMessage.class);
                             Message.MessageDetails message = packet.getDetails();
-                            broker.addMessage(message);
+                            broker.addMessage(message, Constants.TYPE_FOLLOWER);
 //                            if (message.size() != 0) {
 //                                LOGGER.info("Received data: " + data.toStringUtf8());
 //                            } else {

@@ -42,14 +42,16 @@ public class Membership {
     protected synchronized void addMember(Node node, Connection conn, String connType) {
         if (!checkMember(node)) {
             members.put(node.getId(), node);
-            if (Objects.equals(connType, Constants.CONN_TYPE_MSG)) {
-                msgConnections.put(node.getId(), conn);
-            } else if (Objects.equals(connType, Constants.CONN_TYPE_HB)) {
-                hbConnections.put(node.getId(), conn);
-            }
             LOGGER.debug("New member added " + node);
             printMembers();
         }
+        if (Objects.equals(connType, Constants.CONN_TYPE_MSG) && !msgConnections.containsKey(node.getId())) {
+            msgConnections.put(node.getId(), conn);
+        } else if (Objects.equals(connType, Constants.CONN_TYPE_HB) && !hbConnections.containsKey(node.getId())) {
+            hbConnections.put(node.getId(), conn);
+        }
+
+
     }
 
 //    public void removeMember(Node node){
@@ -57,8 +59,10 @@ public class Membership {
 //    }
 
     protected synchronized void removeMember(int id) {
-        LOGGER.info("Removing broker " + id);
-        this.members.remove(id);
+        Node node = this.members.remove(id);
+        if (node == null) {
+            LOGGER.info("Removing broker " + id);
+        }
         this.msgConnections.remove(id);
         this.hbConnections.remove(id);
         this.printMembers();
@@ -81,6 +85,6 @@ public class Membership {
     }
 
     private void printMembers() {
-        LOGGER.info(this.members.keySet());
+        LOGGER.info("Members: " + this.members.keySet());
     }
 }

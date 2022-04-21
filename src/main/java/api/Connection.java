@@ -21,7 +21,7 @@ import java.util.concurrent.TimeUnit;
  * @author anchitbhatia
  */
 public class Connection {
-    private static final Logger LOGGER = LogManager.getLogger(Connection.class);
+    private static final Logger LOGGER = LogManager.getLogger("Conn");
     private final Node node;
     private final Socket socket;
     private final DataInputStream inputStream;

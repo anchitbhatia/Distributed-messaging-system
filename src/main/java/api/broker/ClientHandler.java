@@ -8,6 +8,7 @@ import messages.Producer;
 import messages.Producer.ProducerRequest;
 import messages.Request.ConsumerRequest;
 import messages.Subscribe.SubscribeRequest;
+import messages.Synchronization.SyncRequest;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import utils.Constants;
@@ -40,6 +41,8 @@ public class ClientHandler implements Runnable{
             this.connectionType = Constants.TYPE_FOLLOWER;
         } else if (packet.is(HeartBeatMessage.class)) {
             this.connectionType = Constants.TYPE_HEARTBEAT;
+        } else if (packet.is(SyncRequest.class)) {
+            this.connectionType = Constants.TYPE_SYNC;
         } else {
             this.connectionType = Constants.TYPE_NULL;
         }
@@ -56,7 +59,7 @@ public class ClientHandler implements Runnable{
                     if (connectionType == null) {
                         setConnectionType(packet);
                     }
-//                    LOGGER.debug("Received packet from " + connectionType);
+                    LOGGER.debug("Received packet from " + connectionType);
                     switch (this.connectionType) {
 //                        case Constants.TYPE_MESSAGE -> this.broker.database.addQueue(packet.unpack(ProducerRecord.ProducerMessage.class));
 //                        case Constants.TYPE_CONSUMER -> serveRequest(packet.unpack(Request.ConsumerRequest.class));
@@ -64,6 +67,7 @@ public class ClientHandler implements Runnable{
                         case Constants.TYPE_PRODUCER -> this.broker.handleProducerRequest(connection, packet.unpack(Producer.ProducerRequest.class));
                         case Constants.TYPE_FOLLOWER -> this.broker.handleFollowRequest(connection, packet.unpack(FollowerRequest.class));
                         case Constants.TYPE_HEARTBEAT ->  this.broker.handleHeartBeat(connection, packet.unpack(HeartBeatMessage.class));
+                        case Constants.TYPE_SYNC -> this.broker.handleSyncRequest(connection, packet.unpack(SyncRequest.class));
                         default -> LOGGER.info("Invalid client");
                     }
                 } catch (IOException e) {
@@ -73,9 +77,9 @@ public class ClientHandler implements Runnable{
                 LOGGER.info("Connection disconnected " + connection);
                 try {
                     connection.close();
-                    if (Objects.equals(this.connectionType, Constants.TYPE_FOLLOWER) || Objects.equals(this.connectionType, Constants.TYPE_HEARTBEAT)) {
-                        this.broker.removeMember(this.connection.getNode().getId());
-                    }
+//                    if (Objects.equals(this.connectionType, Constants.TYPE_FOLLOWER) || Objects.equals(this.connectionType, Constants.TYPE_HEARTBEAT)) {
+//                        this.broker.removeMember(this.connection.getNode().getId());
+//                    }
                 } catch (IOException e) {
                     e.printStackTrace();
                 }

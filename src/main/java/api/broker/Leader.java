@@ -40,7 +40,7 @@ public class Leader extends BrokerState{
         NodeDetails follower = request.getNode();
         LOGGER.info("Sync request from " + follower.getId());
         connection.setNodeFields(follower);
-//        this.broker.initiateSync(connection, Constants.SYNC_SEND);
+        this.broker.initiateSync(connection, Constants.SYNC_SEND);
     }
 
     private void replicateNewMessage(Message.NewMessage message, long offset) {
@@ -109,6 +109,7 @@ public class Leader extends BrokerState{
         LOGGER.info("Follow request from " + follower.getId());
         connection.setNodeFields(follower);
         this.broker.addMember(connection.getNode(), connection, Constants.CONN_TYPE_MSG);
+        this.broker.addMember(connection.getNode(), new Connection(connection.getNode()), Constants.CONN_TYPE_HB);
     }
 
     @Override

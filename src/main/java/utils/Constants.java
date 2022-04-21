@@ -18,6 +18,7 @@ public class Constants {
     public static final String TYPE_FOLLOWER = "follower";
     public static final String TYPE_LEADER = "leader";
     public static final String TYPE_HEARTBEAT = "heartbeat";
+    public static final String TYPE_SYNC = "sync";
     public static final String TYPE_NULL = null;
     public static final String PUSH_TYPE = "push";
 

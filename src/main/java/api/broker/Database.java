@@ -4,7 +4,6 @@ import api.Connection;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import java.io.Serializable;
 import java.util.*;
 import java.util.concurrent.*;
 
@@ -84,16 +83,14 @@ public class Database {
         return subscribers.getOrDefault(topic, null);
     }
 
-    public void addMessage(String topic, byte[] data, long offset) {
+    public Long addMessage(String topic, byte[] data, long offset) {
         long requiredOffset = currentOffsetMap.getOrDefault(topic, 0L);
         if (offset == requiredOffset) {
             this.addMessage(topic, data);
-            return;
-        }
-        else {
-
+            return this.currentOffsetMap.get(topic);
         }
         LOGGER.error("Wrong offset | required: " + requiredOffset + ", received: " + offset);
+        return requiredOffset;
     }
 
 //    public ArrayList<Map<String, ? >> getSnapshot() {
@@ -125,6 +122,9 @@ public class Database {
         currentOffset += data.length;
         currentOffsetMap.put(topic, currentOffset);
         LOGGER.info("Record added | topic: " + topic + ", offset: " + lastOffset);
+        for (Map.Entry<String, ConcurrentHashMap<Long, byte[]>> item : database.entrySet()) {
+            LOGGER.info("Current db | topic:" + item.getKey() + ", total entries : " + item.getValue().size());
+        }
         return lastOffset;
     }
 
