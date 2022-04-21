@@ -7,11 +7,13 @@ import com.google.protobuf.InvalidProtocolBufferException;
 import messages.Ack;
 import messages.ConsumerRecord;
 import messages.Follower.FollowerRequest;
+import messages.Message;
 import messages.Message.MessageDetails;
 import messages.Node.NodeDetails;
 import messages.Producer.ProducerMessage;
 import messages.Producer.ProducerRequest;
 import messages.Replicate.ReplicateMessage;
+import messages.Synchronization;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import utils.ConnectionException;
@@ -33,9 +35,22 @@ public class Leader extends BrokerState{
     void startBroker() {
     }
 
-    private void replicateMessage(MessageDetails message) {
+    @Override
+    void handleSyncRequest(Connection connection, Synchronization.SyncRequest request) {
+        NodeDetails follower = request.getNode();
+        LOGGER.info("Sync request from " + follower.getId());
+        connection.setNodeFields(follower);
+//        this.broker.initiateSync(connection, Constants.SYNC_SEND);
+    }
+
+    private void replicateNewMessage(Message.NewMessage message, long offset) {
+        MessageDetails details = MessageDetails.newBuilder().
+                setTopic(message.getTopic()).
+                setData(message.getData()).
+                setOffset(offset).
+                build();
         ReplicateMessage replicateMessage = ReplicateMessage.newBuilder().
-                setDetails(message).
+                setDetails(details).
                 build();
         Any packet = Any.pack(replicateMessage);
         List<Connection> msgConnections = this.broker.getMsgConnections();
@@ -60,23 +75,6 @@ public class Leader extends BrokerState{
         connection.send(packet.toByteArray());
     }
 
-    private void receiveMessages(Connection connection) {
-        while(!connection.isClosed()) {
-            byte[] bytes =  connection.receive();
-            if (bytes != null) {
-                try {
-                    ProducerMessage producerMsg = Any.parseFrom(bytes).unpack(ProducerMessage.class);
-                    MessageDetails message = producerMsg.getDetails();
-                    this.replicateMessage(message);
-                    this.broker.addMessage(message);
-                } catch (InvalidProtocolBufferException e) {
-                    e.printStackTrace();
-                }
-            }
-
-        }
-    }
-
     @Override
     void handleProducerRequest(Connection connection, ProducerRequest request) {
         LOGGER.info("Request from producer with topic : " + request.getTopic());
@@ -87,9 +85,9 @@ public class Leader extends BrokerState{
                 if (bytes != null) {
                     try {
                         ProducerMessage producerMsg = Any.parseFrom(bytes).unpack(ProducerMessage.class);
-                        MessageDetails message = producerMsg.getDetails();
-                        this.replicateMessage(message);
-                        this.broker.addMessage(message);
+                        Message.NewMessage message = producerMsg.getMessage();
+                        long offset = this.broker.addMessage(message);
+                        this.replicateNewMessage(message, offset);
                         sendAck(connection);
                     } catch (InvalidProtocolBufferException e) {
                         e.printStackTrace();

@@ -3,7 +3,18 @@ syntax = "proto3";
 option java_package = "messages";
 option java_outer_classname = "Message";
 
+message MessageRequest{
+  string topic = 1;
+  uint64 offset = 2;
+}
+
+message NewMessage{
+  string topic = 1;
+  bytes data = 2;
+}
+
 message MessageDetails{
   string topic = 1;
   bytes data = 2;
+  uint64 offset = 3;
 }

@@ -3,6 +3,8 @@ package api.broker;
 import api.Connection;
 import messages.HeartBeat.HeartBeatMessage;
 import messages.Follower.FollowerRequest;
+import messages.Message;
+import messages.Message.NewMessage;
 import messages.Message.MessageDetails;
 import messages.Producer.ProducerRequest;
 import org.apache.logging.log4j.LogManager;
@@ -13,9 +15,10 @@ import utils.Node;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
-import java.util.concurrent.CopyOnWriteArrayList;
 
 public class Broker {
     private static final Logger LOGGER = LogManager.getLogger(Broker.class);
@@ -29,6 +32,7 @@ public class Broker {
     protected final Membership membership;
     protected final HeartBeatModule heartBeatModule;
     protected final FailureDetectorModule failureDetectorModule;
+    protected final SynchronizationModule synchronizationModule;
 
     public Broker(Node node) throws IOException {
         this(node, node);
@@ -63,6 +67,7 @@ public class Broker {
         this.membership = new Membership(this);
         this.heartBeatModule = new HeartBeatModule(this);
         this.failureDetectorModule = new FailureDetectorModule(this);
+        this.synchronizationModule = new SynchronizationModule(this);
     }
 
     public void startBroker(){
@@ -70,8 +75,8 @@ public class Broker {
         this.isBrokerRunning = true;
         this.serverThread.start();
         this.state.startBroker();
-        this.heartBeatModule.startModule();
-        this.failureDetectorModule.startModule();
+//        this.heartBeatModule.startModule();
+//        this.failureDetectorModule.startModule();
     }
 
     public void setNewLeader(Node leader) {
@@ -94,7 +99,11 @@ public class Broker {
     }
 
     protected void addMessage(MessageDetails message) {
-        this.database.addMessage(message.getTopic(), message.getData().toByteArray());
+        this.database.addMessage(message.getTopic(), message.getData().toByteArray(), message.getOffset());
+    }
+
+    protected Long addMessage(NewMessage message) {
+        return this.database.addMessage(message.getTopic(), message.getData().toByteArray());
     }
 
     protected List<Connection> getMsgConnections() {
@@ -108,6 +117,48 @@ public class Broker {
     protected List<Node> getMembers() {
         return this.membership.getMembers();
     }
+
+    protected Map<String, Long> getCurrentOffsetSnapshot() {
+        return this.database.getCurrentOffsetSnapshot();
+    }
+
+//    protected void initiateSync(Connection connection, String type) {
+//        if (Objects.equals(type, Constants.SYNC_SEND)) {
+//            this.synchronizationModule.initiateSend(connection);
+//        }
+//    }
+
+//    protected void serveMessageRequest(Request.ConsumerRequest request) throws IOException {
+//        String topic = request.getTopic();
+//        long offset = request.getOffset();
+//        LOGGER.debug("Consumer requested, topic: " + topic + ", offset: " + offset);
+//        byte[] data = this.broker.database.getRecord(topic, offset);
+//        ConsumerRecord.Message record;
+//        if (data != null) {
+//            record = ConsumerRecord.Message.newBuilder().
+//                    setOffset(offset).
+//                    setData(ByteString.copyFrom(data)).
+//                    build();
+//            LOGGER.debug("Responding to consumer, topic: " + topic + ", data: " + ByteString.copyFrom(data));
+//        } else {
+//            data = new byte[0];
+//            record = ConsumerRecord.Message.newBuilder().
+//                    setOffset(offset).
+//                    setData(ByteString.copyFrom(data))
+//                    .build();
+//            LOGGER.debug("Responding to consumer, topic: " + topic + ", data: null");
+//        }
+//        Any packet = Any.pack(record);
+//        try {
+//            connection.send(packet.toByteArray());
+//        } catch (ConnectionException e) {
+//            connection.close();
+//            LOGGER.debug("Unable to send to consumer, topic: " + topic + ", offset: " + offset);
+//            return;
+//        }
+//        LOGGER.debug("Sent to consumer, topic: " + topic + ", offset: " + offset);
+//    }
+//    }
 
     protected void handleProducerRequest(Connection connection, ProducerRequest request) {
         this.state.handleProducerRequest(connection, request);

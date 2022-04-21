@@ -10,7 +10,9 @@ import messages.Leader.LeaderDetails;
 import messages.Message;
 import messages.Node.NodeDetails;
 import messages.Producer;
+import messages.Replicate;
 import messages.Replicate.ReplicateMessage;
+import messages.Synchronization;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import utils.ConnectionException;
@@ -33,6 +35,11 @@ public class Follower extends BrokerState{
     public void startBroker(){
         LOGGER.info("Starting clientThread");
         this.clientThread.start();
+    }
+
+    @Override
+    void handleSyncRequest(Connection connection, Synchronization.SyncRequest request) {
+
     }
 
     @Override
@@ -123,7 +130,8 @@ public class Follower extends BrokerState{
                     record = fetchLeader();
                     if (record != null) {
                         if (record.is(ReplicateMessage.class)) {
-                            Message.MessageDetails message = record.unpack(ReplicateMessage.class).getDetails();
+                            ReplicateMessage packet = record.unpack(ReplicateMessage.class);
+                            Message.MessageDetails message = packet.getDetails();
                             broker.addMessage(message);
 //                            if (message.size() != 0) {
 //                                LOGGER.info("Received data: " + data.toStringUtf8());

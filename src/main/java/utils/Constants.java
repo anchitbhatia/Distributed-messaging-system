@@ -24,6 +24,9 @@ public class Constants {
     public static final String CONN_TYPE_MSG = "msg";
     public static final String CONN_TYPE_HB = "msg";
 
+    public static final String SYNC_SEND = "send";
+    public static final String SYNC_RECEIVE = "receive";
+
     public static final int POLL_TIMEOUT = 2000;
     public static final int HB_SCHEDULER_TIME = 2000;
     public static final int FD_SCHEDULER_TIME = 5000;

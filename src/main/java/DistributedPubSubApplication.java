@@ -26,7 +26,7 @@ import java.util.Objects;
  * @author anchitbhatia
  */
 public class DistributedPubSubApplication {
-    private static final Logger LOGGER = LogManager.getLogger("Application");
+    private static final Logger LOGGER = LogManager.getLogger("App");
 
     /***
      * Method for producer application
@@ -38,20 +38,26 @@ public class DistributedPubSubApplication {
             Producer producer = new Producer(brokerNode);
             String topic = config.getTopic();
             String file = config.getFile();
-            try (BufferedReader br = new BufferedReader(new FileReader(file))) {
-                String line;
-                while ((line = br.readLine()) != null) {
-                    LOGGER.info("Publishing, data: " + line);
-                    producer.send(topic, line.getBytes());
-                    Thread.sleep(1000);
+            if (producer.sendRequest(topic)) {
+                LOGGER.info("Request accepted by leader");
+                try (BufferedReader br = new BufferedReader(new FileReader(file))) {
+                    String line;
+                    while ((line = br.readLine()) != null) {
+                        LOGGER.info("Publishing, data: " + line);
+                        producer.send(topic, line.getBytes());
+                        Thread.sleep(3000);
+                    }
+                } catch (ConnectionException e) {
+                    LOGGER.info("Unable to publish, connection closed");
+                } catch (IOException | InterruptedException e) {
+                    e.printStackTrace();
                 }
-            } catch (ConnectionException e) {
-                LOGGER.info("Unable to publish, connection closed");
-            } catch (IOException | InterruptedException e) {
-                e.printStackTrace();
+                producer.close();
+                LOGGER.info("Finished publishing");
             }
-            producer.close();
-            LOGGER.info("Finished publishing");
+            else {
+                LOGGER.info("Request to leader not successful");
+            }
         } catch (ConnectionException | IOException e) {
             e.printStackTrace();
         }
@@ -117,6 +123,7 @@ public class DistributedPubSubApplication {
     }
 
     public static void main(String[] args) {
+
         try {
             ApplicationConfig app = Helper.parseArgs(args);
             Object config = app.getConfig();

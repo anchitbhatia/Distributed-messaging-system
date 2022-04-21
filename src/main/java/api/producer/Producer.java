@@ -9,7 +9,6 @@ import messages.Message;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import utils.Node;
-import messages.ProducerRecord;
 import utils.ConnectionException;
 import java.io.IOException;
 import java.net.Socket;
@@ -66,11 +65,11 @@ public class Producer {
     public void send(String topic, byte[] data) throws ConnectionException, IOException {
         if (!this.brokerConnection.isClosed()) {
             LOGGER.info("Publishing topic: " + topic + ", length: " + data.length);
-            Message.MessageDetails msg = Message.MessageDetails.newBuilder().
+            Message.NewMessage msg = Message.NewMessage.newBuilder().
                     setTopic(topic).
                     setData(ByteString.copyFrom(data)).
                     build();
-            messages.Producer.ProducerMessage message = messages.Producer.ProducerMessage.newBuilder().setDetails(msg).build();
+            messages.Producer.ProducerMessage message = messages.Producer.ProducerMessage.newBuilder().setMessage(msg).build();
             Any packet = Any.pack(message);
             try {
                 this.brokerConnection.send(packet.toByteArray());

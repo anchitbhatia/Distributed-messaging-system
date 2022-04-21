@@ -7,6 +7,7 @@ import messages.Leader.LeaderDetails;
 import messages.Node.NodeDetails;
 import messages.Producer;
 import messages.Producer.ProducerRequest;
+import messages.Synchronization;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import utils.Node;
@@ -22,6 +23,8 @@ public abstract class BrokerState {
     }
 
     abstract void startBroker();
+
+    abstract void handleSyncRequest(Connection connection, Synchronization.SyncRequest request);
 
     abstract void handleProducerRequest(Connection connection, Producer.ProducerRequest request);
 

@@ -1,11 +1,11 @@
 package api.broker;
 
 import api.Connection;
-import messages.ProducerRecord;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import utils.Constants;
 
+import java.io.Serializable;
+import java.util.*;
 import java.util.concurrent.*;
 
 /***
@@ -84,6 +84,32 @@ public class Database {
         return subscribers.getOrDefault(topic, null);
     }
 
+    public void addMessage(String topic, byte[] data, long offset) {
+        long requiredOffset = currentOffsetMap.getOrDefault(topic, 0L);
+        if (offset == requiredOffset) {
+            this.addMessage(topic, data);
+            return;
+        }
+        else {
+
+        }
+        LOGGER.error("Wrong offset | required: " + requiredOffset + ", received: " + offset);
+    }
+
+//    public ArrayList<Map<String, ? >> getSnapshot() {
+//        Map<String, Long> currentOffsetMapCopy = new HashMap<>(this.currentOffsetMap);
+//        Map<String, HashMap<Long, byte[]>> databaseCopy = new HashMap<>();
+//        for (Map.Entry<String, ConcurrentHashMap<Long, byte[]>> item: this.database.entrySet()) {
+//            HashMap<Long, byte[]> data = new HashMap<>(item.getValue());
+//            databaseCopy.put(item.getKey(), data);
+//        }
+//        return new ArrayList<>(Arrays.asList(currentOffsetMapCopy, databaseCopy));
+//    }
+
+    public Map<String, Long> getCurrentOffsetSnapshot() {
+        return new HashMap<>(this.currentOffsetMap);
+    }
+
     /***
      * Method to add record in database
      * @param topic : topic of the record
@@ -98,7 +124,7 @@ public class Database {
         Long lastOffset = currentOffset;
         currentOffset += data.length;
         currentOffsetMap.put(topic, currentOffset);
-        LOGGER.info("Record added topic: " + topic + ", offset: " + currentOffset);
+        LOGGER.info("Record added | topic: " + topic + ", offset: " + lastOffset);
         return lastOffset;
     }
 
