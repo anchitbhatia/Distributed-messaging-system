@@ -14,7 +14,7 @@ import java.util.TimerTask;
 
 public class Election {
     private static final Logger LOGGER = LogManager.getLogger("Election");
-    private Broker broker;
+    private final Broker broker;
     private final Scheduler scheduler;
     private List<Connection> connections;
 
@@ -24,6 +24,10 @@ public class Election {
         this.connections = null;
     }
 
+    /***
+     * Method to send msg to everyone
+     * @param packet : packet to be sent
+     */
     private void sendMsgToAll(Any packet) {
         this.connections = this.broker.getHbConnections();
         for (Connection connection : this.connections) {
@@ -35,6 +39,9 @@ public class Election {
         }
     }
 
+    /***
+     * Method to declare itself leader and send victory message to everyone
+     */
     private void victory() {
         LOGGER.info("Sending victory message");
         NodeDetails thisNode = Helper.getNodeDetailsObj(broker.node);
@@ -45,6 +52,9 @@ public class Election {
         broker.changeState(new Leader(broker));
     }
 
+    /***
+     * Method to initiate election
+     */
     public void initiateElection() {
         LOGGER.info("Starting election");
         this.connections = this.broker.getHbConnections();
@@ -75,11 +85,17 @@ public class Election {
         });
     }
 
+    /***
+     * Method to stop election
+     */
     public void stopElectionTask() {
         LOGGER.info("Stopping election");
         this.scheduler.cancelTask();
     }
 
+    /***
+     * Method to initiate sync from everyone
+     */
     private void initiateSyncToAll() {
         LOGGER.info("Initiating sync to all");
         if (this.connections == null) {
@@ -89,16 +105,4 @@ public class Election {
             this.broker.initiateSync(connection, Constants.SYNC_RECEIVE);
         }
     }
-
-//    private class ElectionWaitTask extends TimerTask {
-//
-//        @Override
-//        public void run() {
-//            NodeDetails thisNode = Helper.getNodeDetailsObj(broker.node);
-//            VictoryMessage victoryMsg = VictoryMessage.newBuilder().setLeader(thisNode).build();
-//            Any packet = Any.pack(victoryMsg);
-//            sendMsgToAll(packet);
-//            initiateSyncToAll();
-//        }
-//    }
 }

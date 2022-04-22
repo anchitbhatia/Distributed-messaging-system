@@ -2,18 +2,17 @@ package api.broker;
 
 import api.Connection;
 import messages.Follower.FollowerRequest;
-import messages.HeartBeat.HeartBeatMessage;
 import messages.Leader.LeaderDetails;
-import messages.Node.NodeDetails;
 import messages.Producer;
-import messages.Producer.ProducerRequest;
-import messages.Synchronization;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import utils.Node;
 
 import java.io.IOException;
 
+/***
+ * Abstract class to manage broker state
+ * @author anchitbhatia
+ */
 public abstract class BrokerState {
     private static final Logger LOGGER = LogManager.getLogger(BrokerState.class);
     protected Broker broker;
@@ -23,8 +22,6 @@ public abstract class BrokerState {
     }
 
     abstract void startBroker();
-
-    abstract void handleSyncRequest(Connection connection, Synchronization.SyncRequest request);
 
     abstract void handleProducerRequest(Connection connection, Producer.ProducerRequest request);
 

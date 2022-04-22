@@ -1,6 +1,7 @@
 package api.broker;
 
 import api.Connection;
+import api.broker.Broker;
 import com.google.protobuf.Any;
 import com.google.protobuf.InvalidProtocolBufferException;
 import messages.Ack;
@@ -32,9 +33,6 @@ public class Synchronization {
         this.isSyncing = false;
     }
 
-    public void startModule() {
-
-    }
 
     public boolean isSyncing() {
         return isSyncing;

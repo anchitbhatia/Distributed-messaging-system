@@ -80,35 +80,6 @@ public class DistributedPubSubApplication {
             e.printStackTrace();
         }
         LOGGER.info("Finished publishing");
-
-//        try {
-////            Producer producer = new Producer(brokerNode);
-//            if (producer.sendRequest(topic)) {
-//                LOGGER.info("Request accepted by leader");
-//                try (BufferedReader br = new BufferedReader(new FileReader(file))) {
-//                    String line;
-//                    Scanner input = new Scanner(System.in);
-//
-//                    while ((line = br.readLine()) != null) {
-//                        input.next();
-//                        LOGGER.info("Publishing, data: " + line);
-//                        producer.send(topic, line.getBytes());
-//                        Thread.sleep(1000);
-//                    }
-//                } catch (ConnectionException e) {
-//                    LOGGER.info("Unable to publish, connection closed");
-//                } catch (IOException | InterruptedException e) {
-//                    e.printStackTrace();
-//                }
-//                producer.close();
-//                LOGGER.info("Finished publishing");
-//            }
-//            else {
-//                LOGGER.info("Request to leader not successful");
-//            }
-//        } catch (ConnectionException | IOException e) {
-//            e.printStackTrace();
-//        }
     }
 
     /***
@@ -141,6 +112,7 @@ public class DistributedPubSubApplication {
         String type = config.getType();
 
         Connection connection = Helper.connectAllBrokers(brokersList, topic, null, false);
+        LOGGER.debug("Connected to " + connection.getNode());
 
         Consumer consumer = null;
         try {

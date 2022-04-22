@@ -3,7 +3,6 @@ package api.consumer;
 import api.Connection;
 import com.google.protobuf.Any;
 import com.google.protobuf.ByteString;
-import messages.ConsumerRecord;
 import messages.Message;
 import messages.Subscribe;
 import org.apache.logging.log4j.LogManager;

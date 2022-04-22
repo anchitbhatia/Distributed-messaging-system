@@ -2,10 +2,8 @@ package api.broker;
 
 import api.Connection;
 import com.google.protobuf.Any;
-import com.google.protobuf.ByteString;
 import com.google.protobuf.InvalidProtocolBufferException;
 import messages.Ack;
-import messages.ConsumerRecord;
 import messages.Follower.FollowerRequest;
 import messages.Message;
 import messages.Message.MessageDetails;
@@ -35,10 +33,6 @@ public class Leader extends BrokerState{
     void startBroker() {
     }
 
-    @Override
-    void handleSyncRequest(Connection connection, Synchronization.SyncRequest request) {
-
-    }
 
     private void replicateNewMessage(Message.NewMessage message, long offset) {
         MessageDetails details = MessageDetails.newBuilder().

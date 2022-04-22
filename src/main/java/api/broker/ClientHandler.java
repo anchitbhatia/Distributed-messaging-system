@@ -9,9 +9,6 @@ import messages.Follower.FollowerRequest;
 import messages.HeartBeat.HeartBeatMessage;
 import messages.Message;
 import messages.Producer;
-import messages.Producer.ProducerRequest;
-import messages.Request;
-import messages.Request.ConsumerRequest;
 import messages.Subscribe.SubscribeRequest;
 import messages.Synchronization.SyncRequest;
 import org.apache.logging.log4j.LogManager;
@@ -19,8 +16,11 @@ import org.apache.logging.log4j.Logger;
 import utils.Constants;
 
 import java.io.IOException;
-import java.util.Objects;
 
+/***
+ * Handler class to manage requests coming to broker server socket
+ * @author anchitbhatia
+ */
 public class ClientHandler implements Runnable{
     private static final Logger LOGGER = LogManager.getLogger("Handler");
     private final Broker broker;
@@ -34,7 +34,10 @@ public class ClientHandler implements Runnable{
         this.connectionType = Constants.TYPE_NULL;
     }
 
-    // Method to set type of connection
+    /***
+     * Method to set type of connection
+     * @param packet : packet received
+     */
     private void setConnectionType(Any packet) {
         if (packet.is(Producer.ProducerRequest.class)) {
             this.connectionType = Constants.TYPE_PRODUCER;
@@ -67,7 +70,6 @@ public class ClientHandler implements Runnable{
                     }
 //                    LOGGER.debug("Received packet from " + connectionType);
                     switch (this.connectionType) {
-//                        case Constants.TYPE_MESSAGE -> this.broker.database.addQueue(packet.unpack(ProducerRecord.ProducerMessage.class));
                         case Constants.TYPE_CONSUMER -> this.broker.serveMessageRequest(connection, packet.unpack(Message.MessageRequest.class));
 //                        case Constants.TYPE_SUBSCRIBER -> newSubscriber(packet.unpack(Subscribe.SubscribeRequest.class));
                         case Constants.TYPE_PRODUCER -> this.broker.handleProducerRequest(connection, packet.unpack(Producer.ProducerRequest.class));

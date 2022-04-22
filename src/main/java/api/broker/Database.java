@@ -13,7 +13,6 @@ import java.util.concurrent.*;
  */
 public class Database {
     private static final Logger LOGGER = LogManager.getLogger(Database.class);
-//    private BlockingQueue<ProducerRecord.ProducerMessage> msgQueue;
     private ConcurrentHashMap<String, ConcurrentLinkedDeque<Connection>> subscribers;
     private ConcurrentHashMap<String, Long> currentOffsetMap;
     private ConcurrentHashMap<String, ConcurrentHashMap<Long, byte[]>> database;
@@ -27,27 +26,6 @@ public class Database {
         currentOffsetMap = new ConcurrentHashMap<>();
         database = new ConcurrentHashMap<>();
     }
-
-//    /***
-//     * Method to add producer record to the queue
-//     * @param record to be added to database
-//     */
-//    public void addQueue(ProducerRecord.ProducerMessage record) {
-//        msgQueue.add(record);
-//        LOGGER.info("Added msg to queue: " + record.getTopic() + ", data: " + record.getData());
-//    }
-
-//    /***
-//     * Method to poll queue holding producer records
-//     * @return first record in the queue
-//     */
-//    public ProducerRecord.ProducerMessage pollMsgQueue() {
-//        try {
-//            return msgQueue.poll(Constants.POLL_TIMEOUT, TimeUnit.MILLISECONDS);
-//        } catch (InterruptedException e) {
-//            return null;
-//        }
-//    }
 
     /***
      * Method to add push based consumer to subscribers list
@@ -93,16 +71,10 @@ public class Database {
         return requiredOffset;
     }
 
-//    public ArrayList<Map<String, ? >> getSnapshot() {
-//        Map<String, Long> currentOffsetMapCopy = new HashMap<>(this.currentOffsetMap);
-//        Map<String, HashMap<Long, byte[]>> databaseCopy = new HashMap<>();
-//        for (Map.Entry<String, ConcurrentHashMap<Long, byte[]>> item: this.database.entrySet()) {
-//            HashMap<Long, byte[]> data = new HashMap<>(item.getValue());
-//            databaseCopy.put(item.getKey(), data);
-//        }
-//        return new ArrayList<>(Arrays.asList(currentOffsetMapCopy, databaseCopy));
-//    }
-
+    /***
+     * Method to get snapshot of curentOffsetMap
+     * @return Map with topic as key and currentoffset required as value
+     */
     public Map<String, Long> getCurrentOffsetSnapshot() {
         return new HashMap<>(this.currentOffsetMap);
     }

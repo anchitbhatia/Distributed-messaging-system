@@ -33,6 +33,10 @@ public class HeartBeatModule {
         this.scheduler = new Scheduler(Constants.HB_SCHEDULER_TIME);
     }
 
+    /***
+     * Method to remove member from heartbeatreceivetimes tab;e
+     * @param id
+     */
     protected synchronized void removeMember(int id) {
         LOGGER.warn("Removing heart beat receive times " + id);
         this.recentlyRemoved.add(id);
@@ -47,7 +51,6 @@ public class HeartBeatModule {
     public void parseHeartBeat(HeartBeatMessage message) {
         int id = message.getNode().getId();
         long time = System.nanoTime();
-//        LOGGER.info("Received heartbeat from " + id + " at " + time);
         this.heartBeatReceiveTimes.put(id, time);
         List<NodeDetails> membersReceived = message.getMembersList();
         List<Node> nodes = this.broker.getMembers();
@@ -55,8 +58,8 @@ public class HeartBeatModule {
         for (Node node: nodes) {
             ids.add(node.getId());
         }
-//        LOGGER.info("Current members: " + ids);
-//        LOGGER.info("Received heartbeat from " + id + ", membersReceived: " + membersReceived.size());
+        LOGGER.info("Current members: " + ids);
+        LOGGER.info("Received heartbeat from " + id + ", membersReceived: " + membersReceived.size());
         for (NodeDetails member: membersReceived) {
             Node node = new Node(member.getHostName(), member.getPort(), member.getId());
             if ((this.broker. node.getId() != node.getId()) && !(this.recentlyRemoved.contains(node.getId()))) {
@@ -68,7 +71,7 @@ public class HeartBeatModule {
         for (Node node: nodes) {
             ids.add(node.getId());
         }
-//        LOGGER.info("Current members: " + ids);
+        LOGGER.info("Current members: " + ids);
     }
 
     public ConcurrentHashMap<Integer, Long> getHeartBeatReceiveTimes(){

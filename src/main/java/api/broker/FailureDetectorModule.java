@@ -9,6 +9,10 @@ import java.util.Map;
 import java.util.TimerTask;
 import java.util.concurrent.TimeUnit;
 
+/***
+ * Failure detector module to detect failure at regular intervals
+ * @author anchitbhatia
+ */
 public class FailureDetectorModule {
     private static final Logger LOGGER = LogManager.getLogger("FDmodule");
     private final Broker broker;
@@ -20,6 +24,9 @@ public class FailureDetectorModule {
         this.scheduler = new Scheduler(Constants.FD_SCHEDULER_TIME);
     }
 
+    /***
+     * Method to start module
+     */
     public void startModule() {
         LOGGER.debug("Starting Failure detector module");
         this.scheduler.scheduleTask(new FailureDetectorTask());

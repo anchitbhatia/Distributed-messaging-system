@@ -3,13 +3,16 @@ package api.broker;
 import api.Connection;
 import com.google.protobuf.Any;
 import com.google.protobuf.ByteString;
-import messages.Ack;
+import messages.Ack.AckMessage;
 import messages.Node.NodeDetails;
 import messages.HeartBeat.HeartBeatMessage;
 import messages.Follower.FollowerRequest;
-import messages.Message;
+import messages.Synchronization.SyncRequest;
+import messages.Message.MessageRequest;
 import messages.Message.NewMessage;
 import messages.Message.MessageDetails;
+import messages.Election.ElectionInitiate;
+import messages.Election.VictoryMessage;
 import messages.Producer.ProducerRequest;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -25,6 +28,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
+/***
+ * Broker class to control broker operations
+ * @author anchitbhatia
+ */
 public class Broker {
     private static final Logger LOGGER = LogManager.getLogger(Broker.class);
     protected BrokerState state;
@@ -62,7 +69,7 @@ public class Broker {
                 while (this.isBrokerRunning){
                     Socket clientSocket = this.serverSocket.accept();
                     Connection connection = new Connection(clientSocket);
-                    Thread client = new Thread(new ClientHandler(this, connection));;
+                    Thread client = new Thread(new ClientHandler(this, connection));
                     client.start();
                 }
             } catch (IOException e) {
@@ -78,6 +85,9 @@ public class Broker {
         this.election = new Election(this);
     }
 
+    /***
+     * Method to start broker
+     */
     public void startBroker(){
         LOGGER.info("Starting broker as " + this.state.getClass().getName());
         this.isBrokerRunning = true;
@@ -88,22 +98,41 @@ public class Broker {
 
     }
 
+    /***
+     * Method to set new leader
+     * @param leader : new leader
+     */
     public void setNewLeader(Node leader) {
         LOGGER.warn("Setting new leader " + leader.getId());
         this.leader = leader;
     }
 
+    /***
+     * Method to change state of the broker
+     * @param newState : new state of the broker
+     */
     protected void changeState(BrokerState newState) {
         this.state = newState;
         this.state.startBroker();
     }
 
+    /***
+     * Method to add member to membership table
+     * @param node : node object of the member to be added
+     * @param connection : connection to be added
+     * @param connType : type of the connection to be added
+     */
     protected void addMember(Node node, Connection connection, String connType) {
         if (node.getId()!=this.node.getId()) {
             this.membership.addMember(node, connection, connType);
         }
     }
 
+    /***
+     * Method to add member to membership table
+     * @param node node object of the member to be added
+     * @param connType connection to be added
+     */
     protected void addMember(Node node, String connType) {
         if (node.getId()!=this.node.getId()) {
             try {
@@ -114,18 +143,32 @@ public class Broker {
         }
     }
 
+    /***
+     * Method to remove member from membership table
+     * @param id : id of the broker to be removed
+     */
     protected void removeMember(int id) {
         LOGGER.warn("Removing broker " + id);
         this.membership.removeMember(id);
         this.heartBeatModule.removeMember(id);
     }
 
+    /***
+     * Method to remove member from membership table
+     * @param id : id of the broker to be removed
+     * @param type : type of the connection of the member to be removed
+     */
     protected void removeMember(int id, String type) {
         this.membership.removeConnection(id, type);
     }
 
+    /***
+     * Method to add message in database
+     * @param message : message details
+     * @param type : type of the message to be added
+     * @return required offset
+     */
     protected Long addMessage(MessageDetails message, String type) {
-
         if (!(Objects.equals(type, Constants.TYPE_SYNC)) && this.synchronization.isSyncing()) {
             this.synchronization.bufferMessage(message);
             return null;
@@ -133,26 +176,52 @@ public class Broker {
         return this.database.addMessage(message.getTopic(), message.getData().toByteArray(), message.getOffset());
     }
 
+    /***
+     * Method to add message in database
+     * @param message : new message to be added
+     * @return required offset
+     */
     protected Long addMessage(NewMessage message) {
         return this.database.addMessage(message.getTopic(), message.getData().toByteArray());
     }
 
+    /***
+     * Method to get msg connections
+     * @return list of connections
+     */
     protected List<Connection> getMsgConnections() {
         return this.membership.getMsgConnections();
     }
 
+    /***
+     * Method to get heartbeat connections
+     * @return list of connections
+     */
     protected List<Connection> getHbConnections() {
         return this.membership.getHbConnections();
     }
 
+    /***
+     * Method to get members in membership table
+     * @return list of nodes
+     */
     protected List<Node> getMembers() {
         return this.membership.getMembers();
     }
 
+    /***
+     * Method to get snapshot of curentOffsetMap
+     * @return Map with topic as key and currentoffset required as value
+     */
     protected Map<String, Long> getCurrentOffsetSnapshot() {
         return this.database.getCurrentOffsetSnapshot();
     }
 
+    /***
+     * Method to initiate synchronization
+     * @param connection : connection object
+     * @param type : type of synchronization required
+     */
     protected void initiateSync(Connection connection, String type) {
         if (Objects.equals(type, Constants.SYNC_SEND)) {
             this.synchronization.startSender(connection);
@@ -162,22 +231,32 @@ public class Broker {
         }
     }
 
+    /***
+     * Method to initiate election
+     */
     protected synchronized void initiateElection() {
-//        this.heartBeatModule.stopModule();
         if (!this.electionInProgress) {
             this.electionInProgress = true;
             this.removeMember(this.leader.getId());
             this.election.initiateElection();
         }
-
     }
 
+    /***
+     * Method to stop election
+     */
     protected void stopElection() {
         this.electionInProgress = false;
         this.election.stopElectionTask();
     }
 
-    protected void serveMessageRequest(Connection connection, Message.MessageRequest request) throws IOException {
+    /***
+     * Method to serve message request
+     * @param connection : connection object
+     * @param request : message request containing request details
+     * @throws IOException if unable to close connection
+     */
+    protected void serveMessageRequest(Connection connection, MessageRequest request) throws IOException {
         String topic = request.getTopic();
         long offset = request.getOffset();
         LOGGER.info("Message request | topic: " + topic + ", offset: " + offset);
@@ -208,9 +287,14 @@ public class Broker {
         LOGGER.info("Sent | topic: " + topic + ", offset: " + offset);
     }
 
-    protected void handleElectionInitiateMessage (Connection connection, messages.Election.ElectionInitiate message) {
+    /***
+     * Method to handle ElectionInitiate message
+     * @param connection : connection object
+     * @param message : election initiate message
+     */
+    protected void handleElectionInitiateMessage (Connection connection, ElectionInitiate message) {
         LOGGER.info("Received election initiation message from " + connection.getNode().getId());
-        Ack.AckMessage ackMessage = Ack.AckMessage.newBuilder().setAccept(true).build();
+        AckMessage ackMessage = AckMessage.newBuilder().setAccept(true).build();
         LOGGER.info("Sending Ack to " + connection.getNode().getId());
         Any packet = Any.pack(ackMessage);
         try {
@@ -221,7 +305,11 @@ public class Broker {
         this.initiateElection();
     }
 
-    protected void handleVictoryMessage(messages.Election.VictoryMessage message) {
+    /***
+     * Method to handle victory message
+     * @param message : victory message
+     */
+    protected void handleVictoryMessage(VictoryMessage message) {
         Node node = Helper.getNodeObj(message.getLeader());
         LOGGER.info("Received victory message from " + node.getId());
         this.removeMember(this.leader.getId());
@@ -230,28 +318,43 @@ public class Broker {
         this.changeState(new Follower(this));
     }
 
+    /***
+     * Method to handle producer request
+     * @param connection : connection object
+     * @param request : request details of the producer
+     */
     protected void handleProducerRequest(Connection connection, ProducerRequest request) {
         this.state.handleProducerRequest(connection, request);
     }
 
+    /***
+     * Method to handle follow request of a broker
+     * @param connection : connection object
+     * @param request : request details of the follower
+     * @throws IOException if unable to close connection
+     */
     protected void handleFollowRequest(Connection connection, FollowerRequest request) throws IOException {
         connection.setNodeFields(request.getNode());
         this.state.handleFollowRequest(connection, request);
     }
 
+    /***
+     * Method to handle heart beat received
+     * @param connection : connection object
+     * @param message : heart beat message received
+     */
     protected void handleHeartBeat(Connection connection, HeartBeatMessage message) {
-//        handler.heartBeatCount++;
-        messages.Node.NodeDetails node = message.getNode();
+        NodeDetails node = message.getNode();
         connection.setNodeFields(node);
-//        this.addMember(connection.getNode(), connection, Constants.CONN_TYPE_HB);
         this.heartBeatModule.parseHeartBeat(message);
-//        if (clientHandler.heartBeatCount > 10) {
-//            this.broker.membership.replaceMembers(message.getMembersList());
-//            clientHandler.heartBeatCount = 0;
-//        }
     }
 
-    protected void handleSyncRequest(Connection connection, messages.Synchronization.SyncRequest request) {
+    /***
+     * Method to handle sync request
+     * @param connection : connection object
+     * @param request : request details for synchronization
+     */
+    protected void handleSyncRequest(Connection connection, SyncRequest request) {
         NodeDetails broker = request.getNode();
         LOGGER.info("Sync request from " + broker.getId());
         connection.setNodeFields(broker);

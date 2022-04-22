@@ -1,9 +1,0 @@
-syntax = "proto3";
-
-option java_package = "messages";
-option java_outer_classname = "ConsumerRecord";
-
-message Message{
-  uint64 offset = 1;
-  bytes data = 2;
-}

@@ -21,7 +21,7 @@ import java.net.Socket;
  */
 public class Producer {
     private static final Logger LOGGER = LogManager.getLogger(Producer.class);
-    private Connection brokerConnection;
+    private final Connection brokerConnection;
 
     public Producer(Connection conn) {
         this.brokerConnection = conn;

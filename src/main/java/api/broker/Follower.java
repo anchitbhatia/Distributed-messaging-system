@@ -2,10 +2,8 @@ package api.broker;
 
 import api.Connection;
 import com.google.protobuf.Any;
-import com.google.protobuf.ByteString;
 import com.google.protobuf.InvalidProtocolBufferException;
 import messages.*;
-import messages.BrokerRecord.BrokerMessage;
 import messages.Follower.FollowerRequest;
 import messages.Leader.LeaderDetails;
 import messages.Node.NodeDetails;
@@ -23,8 +21,8 @@ import java.io.IOException;
 public class Follower extends BrokerState{
     private static final Logger LOGGER = LogManager.getLogger(Follower.class);
     private Connection leaderConnection;
-    private Thread clientThread;
-    private Thread syncThread;
+    private final Thread clientThread;
+    private final Thread syncThread;
 
     public Follower(Broker broker) {
         super(broker);
@@ -34,6 +32,9 @@ public class Follower extends BrokerState{
         this.syncThread = new Thread(() -> broker.initiateSync(this.leaderConnection, Constants.SYNC_RECEIVE));
     }
 
+    /***
+     * Method to start broker
+     */
     public void startBroker(){
         LOGGER.info("Starting clientThread");
         try {
@@ -47,11 +48,12 @@ public class Follower extends BrokerState{
         this.syncThread.start();
     }
 
-    @Override
-    void handleSyncRequest(Connection connection, Synchronization.SyncRequest request) {
 
-    }
-
+    /***
+     * Method to handle producer request
+     * @param connection : connection object
+     * @param request : request details
+     */
     @Override
     void handleProducerRequest(Connection connection, Producer.ProducerRequest request) {
         Ack.AckMessage message = Ack.AckMessage.newBuilder().setAccept(false).build();
@@ -67,12 +69,14 @@ public class Follower extends BrokerState{
         }
     }
 
-    private void restartClientThread(){
-//        this.clientThread.stop();
-    }
-
+    /***
+     *
+     * @param connection connection object
+     * @param request details of the request
+     * @throws IOException if unable to close connection
+     */
     @Override
-    void handleFollowRequest(Connection connection, messages.Follower.FollowerRequest request) throws IOException {
+    void handleFollowRequest(Connection connection, FollowerRequest request) throws IOException {
         NodeDetails leaderNode = Helper.getNodeDetailsObj(this.broker.leader);
         LeaderDetails leader = LeaderDetails.newBuilder().setLeader(leaderNode).build();
         Any packet = Any.pack(leader);
@@ -86,6 +90,11 @@ public class Follower extends BrokerState{
         }
     }
 
+    /***
+     * Method to handle leader details
+     * @param leaderDetails : details of the leader received
+     * @throws IOException if unable to close connection
+     */
     @Override
     void   handleLeaderDetails(LeaderDetails leaderDetails) throws IOException {
         Node newLeader = Helper.getNodeObj(leaderDetails.getLeader());
@@ -95,11 +104,10 @@ public class Follower extends BrokerState{
         this.broker.changeState(new Follower(this.broker));
     }
 
-//    @Override
-//    void handleHeartBeat(ClientHandler clientHandler, HeartBeat.HeartBeatMessage message) {
-//
-//    }
-
+    /***
+     * Method to connect to leader
+     * @throws IOException if unable to close connection
+     */
     private void connectLeader() throws IOException {
         this.leaderConnection = new Connection(this.broker.leader);
         NodeDetails follower = messages.Node.NodeDetails.newBuilder().
@@ -118,6 +126,11 @@ public class Follower extends BrokerState{
         }
     }
 
+    /***
+     * Method to fetch leader
+     * @return ANy packet
+     * @throws InvalidProtocolBufferException if unable to parse packet
+     */
     private Any fetchLeader() throws InvalidProtocolBufferException {
         if (!this.leaderConnection.isClosed()) {
             byte[] record = this.leaderConnection.receive();
@@ -126,6 +139,10 @@ public class Follower extends BrokerState{
         return null;
     }
 
+    /***
+     * Method to close connection to leader
+     * @throws IOException if unable to close connection
+     */
     private void close() throws IOException {
         LOGGER.info("Closing connection to broker with id " + this.broker.leader.getId());
         this.leaderConnection.close();

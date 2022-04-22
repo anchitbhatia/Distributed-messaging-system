@@ -3,14 +3,11 @@ package api.consumer;
 import api.Connection;
 import com.google.protobuf.Any;
 import com.google.protobuf.ByteString;
-import messages.ConsumerRecord;
 import messages.Message;
-import messages.Request;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import utils.ConnectionException;
 import utils.Helper;
-import utils.Node;
 
 import java.io.IOException;
 
@@ -25,7 +22,7 @@ public class PullBasedConsumer extends Consumer implements Runnable{
     public PullBasedConsumer(Connection connection, String topic, Long offset) throws ConnectionException {
         super(connection, topic);
         this.nextOffset = offset;
-        Thread fetchingThread = new Thread(this, "Pull");
+        Thread fetchingThread = new Thread(this, "Pullbased");
         fetchingThread.start();
     }
 
