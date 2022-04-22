@@ -1,8 +1,10 @@
 package api.consumer;
 
+import api.Connection;
 import com.google.protobuf.Any;
 import com.google.protobuf.ByteString;
 import messages.ConsumerRecord;
+import messages.Message;
 import messages.Subscribe;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -18,8 +20,8 @@ import java.io.IOException;
 public class PushBasedConsumer extends Consumer implements Runnable{
     private static final Logger LOGGER = LogManager.getLogger(PushBasedConsumer.class);
 
-    public PushBasedConsumer(Node brokerNode, String topic) throws ConnectionException {
-        super(brokerNode, topic);
+    public PushBasedConsumer(Connection connection, String topic) throws ConnectionException {
+        super(connection, topic);
         Thread fetchingThread = new Thread(this, "Push");
         fetchingThread.start();
     }
@@ -47,7 +49,7 @@ public class PushBasedConsumer extends Consumer implements Runnable{
             e.printStackTrace();
         }
         while(!this.isClosed()){
-            ConsumerRecord.Message record = null;
+            Message.MessageDetails record = null;
             try {
                 record = this.fetchBroker();
             } catch (IOException e) {

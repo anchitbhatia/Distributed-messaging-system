@@ -5,6 +5,7 @@ import com.google.protobuf.Any;
 import com.google.protobuf.ByteString;
 import com.google.protobuf.InvalidProtocolBufferException;
 import messages.ConsumerRecord;
+import messages.Message;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import utils.Node;
@@ -12,6 +13,7 @@ import utils.ConnectionException;
 
 import java.io.IOException;
 import java.net.Socket;
+import java.util.List;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
@@ -22,19 +24,22 @@ import java.util.concurrent.TimeUnit;
  */
 public class Consumer {
     private static final Logger LOGGER = LogManager.getLogger(Consumer.class);
-    protected final Connection brokerConnection;
+    protected Connection brokerConnection;
     protected final BlockingQueue<ByteString> queue;
     protected final String topic;
+    protected List<Node> allBrokers;
+    protected Any requestPacket;
 
-    public Consumer(Node brokerNode, String topic) throws ConnectionException {
-        try {
-            Socket broker = new Socket(brokerNode.getHostName(), brokerNode.getPort());
-            this.brokerConnection = new Connection(broker);
-            this.topic = topic;
-            this.queue = new LinkedBlockingQueue<>();
-        } catch (IOException e) {
-            throw new ConnectionException("Unable to establish connection to broker " + brokerNode);
-        }
+    public Consumer(Connection connection, String topic) throws ConnectionException {
+        //            Socket broker = new Socket(brokerNode.getHostName(), brokerNode.getPort());
+        this.brokerConnection = connection;
+        this.topic = topic;
+        this.queue = new LinkedBlockingQueue<>();
+    }
+
+    public void initializeBrokerDetails(List<Node> allBrokers) {
+        this.allBrokers = allBrokers;
+        this.requestPacket = null;
     }
 
     /***
@@ -54,12 +59,12 @@ public class Consumer {
      * Method to fetch record from broker
      * @return Record fetched
      */
-    protected ConsumerRecord.Message fetchBroker() throws IOException, ConnectionException {
+    protected Message.MessageDetails fetchBroker() throws IOException, ConnectionException {
         if (!brokerConnection.isClosed()) {
             byte[] record = brokerConnection.receive();
             try {
                 Any packet = Any.parseFrom(record);
-                return packet.unpack(ConsumerRecord.Message.class);
+                return packet.unpack(Message.MessageDetails.class);
             } catch (NullPointerException e) {
                 this.close();
                 throw new ConnectionException("Connection closed!");

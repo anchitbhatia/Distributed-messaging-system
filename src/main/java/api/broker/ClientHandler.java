@@ -7,8 +7,10 @@ import messages.Election.ElectionInitiate;
 import messages.Election.VictoryMessage;
 import messages.Follower.FollowerRequest;
 import messages.HeartBeat.HeartBeatMessage;
+import messages.Message;
 import messages.Producer;
 import messages.Producer.ProducerRequest;
+import messages.Request;
 import messages.Request.ConsumerRequest;
 import messages.Subscribe.SubscribeRequest;
 import messages.Synchronization.SyncRequest;
@@ -36,7 +38,7 @@ public class ClientHandler implements Runnable{
     private void setConnectionType(Any packet) {
         if (packet.is(Producer.ProducerRequest.class)) {
             this.connectionType = Constants.TYPE_PRODUCER;
-        } else if (packet.is(ConsumerRequest.class)) {
+        } else if (packet.is(Message.MessageRequest.class)) {
             this.connectionType = Constants.TYPE_CONSUMER;
         } else if (packet.is(SubscribeRequest.class)) {
             this.connectionType = Constants.TYPE_SUBSCRIBER;
@@ -66,7 +68,7 @@ public class ClientHandler implements Runnable{
 //                    LOGGER.debug("Received packet from " + connectionType);
                     switch (this.connectionType) {
 //                        case Constants.TYPE_MESSAGE -> this.broker.database.addQueue(packet.unpack(ProducerRecord.ProducerMessage.class));
-                        case Constants.TYPE_CONSUMER -> serveRequest(packet.unpack(Request.ConsumerRequest.class));
+                        case Constants.TYPE_CONSUMER -> this.broker.serveMessageRequest(connection, packet.unpack(Message.MessageRequest.class));
 //                        case Constants.TYPE_SUBSCRIBER -> newSubscriber(packet.unpack(Subscribe.SubscribeRequest.class));
                         case Constants.TYPE_PRODUCER -> this.broker.handleProducerRequest(connection, packet.unpack(Producer.ProducerRequest.class));
                         case Constants.TYPE_FOLLOWER -> this.broker.handleFollowRequest(connection, packet.unpack(FollowerRequest.class));

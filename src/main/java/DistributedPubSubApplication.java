@@ -1,3 +1,4 @@
+import api.Connection;
 import api.broker.Broker;
 //import api.broker.BrokerOld;
 //
@@ -7,8 +8,12 @@ import api.consumer.Consumer;
 import api.consumer.PullBasedConsumer;
 import api.consumer.PushBasedConsumer;
 import api.producer.Producer;
+import com.google.protobuf.Any;
 import com.google.protobuf.ByteString;
+import com.google.protobuf.InvalidProtocolBufferException;
 import configs.ConsumerConfig;
+import messages.Ack;
+import messages.Leader;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import utils.ConnectionException;
@@ -19,6 +24,8 @@ import configs.ProducerConfig;
 import utils.*;
 
 import java.io.*;
+import java.net.Socket;
+import java.util.List;
 import java.util.Objects;
 import java.util.Scanner;
 
@@ -29,41 +36,79 @@ import java.util.Scanner;
 public class DistributedPubSubApplication {
     private static final Logger LOGGER = LogManager.getLogger("App");
 
+
+    private static Producer getNewProducerObject(List<Node> allBrokers, String topic, Any packet) {
+        LOGGER.debug("Getting new Object");
+        Connection brokerConnection = Helper.connectAllBrokers(allBrokers, topic, packet, true);
+        return new Producer(brokerConnection);
+    }
+
     /***
      * Method for producer application
      * @param config : producer configuration
      */
     private static void producerNode(ProducerConfig config){
-        Node brokerNode = config.getBroker();
-        try {
-            Producer producer = new Producer(brokerNode);
-            String topic = config.getTopic();
-            String file = config.getFile();
-            if (producer.sendRequest(topic)) {
-                LOGGER.info("Request accepted by leader");
-                try (BufferedReader br = new BufferedReader(new FileReader(file))) {
-                    String line;
-                    Scanner input = new Scanner(System.in);
-                    while ((line = br.readLine()) != null) {
-                        input.next();
-                        LOGGER.info("Publishing, data: " + line);
-                        producer.send(topic, line.getBytes());
-                        Thread.sleep(1000);
-                    }
-                } catch (ConnectionException e) {
-                    LOGGER.info("Unable to publish, connection closed");
-                } catch (IOException | InterruptedException e) {
-                    e.printStackTrace();
+        String topic = config.getTopic();
+        String file = config.getFile();
+        messages.Producer.ProducerRequest request = messages.Producer.ProducerRequest.newBuilder().setTopic(topic).build();
+        Any requestPacket = Any.pack(request);
+//        Producer producer = null;
+        List<Node> brokersList = config.getBrokers();
+        Producer producer = getNewProducerObject(brokersList, topic, requestPacket);
+        LOGGER.info("Request accepted by leader");
+        try (BufferedReader br = new BufferedReader(new FileReader(file))) {
+            String line;
+            Scanner input = new Scanner(System.in);
+            while ((line = br.readLine()) != null) {
+//                input.next();
+                LOGGER.info("Publishing, data: " + line);
+                try {
+                    producer.send(topic, line.getBytes());
+                } catch (IOException | ConnectionException e) {
+                    producer.close();
+                    producer = getNewProducerObject(brokersList, topic, requestPacket);
+                    producer.send(topic, line.getBytes());
                 }
-                producer.close();
-                LOGGER.info("Finished publishing");
+//                Thread.sleep(1000);
             }
-            else {
-                LOGGER.info("Request to leader not successful");
-            }
-        } catch (ConnectionException | IOException e) {
+        } catch (IOException  | ConnectionException e) {
+            LOGGER.error("Unable to publish");
+        }
+        try {
+            producer.close();
+        } catch (IOException e) {
             e.printStackTrace();
         }
+        LOGGER.info("Finished publishing");
+
+//        try {
+////            Producer producer = new Producer(brokerNode);
+//            if (producer.sendRequest(topic)) {
+//                LOGGER.info("Request accepted by leader");
+//                try (BufferedReader br = new BufferedReader(new FileReader(file))) {
+//                    String line;
+//                    Scanner input = new Scanner(System.in);
+//
+//                    while ((line = br.readLine()) != null) {
+//                        input.next();
+//                        LOGGER.info("Publishing, data: " + line);
+//                        producer.send(topic, line.getBytes());
+//                        Thread.sleep(1000);
+//                    }
+//                } catch (ConnectionException e) {
+//                    LOGGER.info("Unable to publish, connection closed");
+//                } catch (IOException | InterruptedException e) {
+//                    e.printStackTrace();
+//                }
+//                producer.close();
+//                LOGGER.info("Finished publishing");
+//            }
+//            else {
+//                LOGGER.info("Request to leader not successful");
+//            }
+//        } catch (ConnectionException | IOException e) {
+//            e.printStackTrace();
+//        }
     }
 
     /***
@@ -90,37 +135,45 @@ public class DistributedPubSubApplication {
      * @param config : consumer configuration
      */
     private static void consumerNode(ConsumerConfig config){
-        Node brokerNode = config.getBroker();
+        List<Node> brokersList = config.getBrokers();
+        LOGGER.debug("Brokers size : " + brokersList.size());
         String topic = config.getTopic();
         String type = config.getType();
+
+        Connection connection = Helper.connectAllBrokers(brokersList, topic, null, false);
+
         Consumer consumer = null;
         try {
             if (Objects.equals(type, Constants.PUSH_TYPE)) {
-                consumer = new PushBasedConsumer(brokerNode, topic);
+                consumer = new PushBasedConsumer(connection, topic);
             }
             else {
                 Long startPosition = config.getStartPosition();
-                consumer = new PullBasedConsumer(brokerNode, topic, startPosition);
+                consumer = new PullBasedConsumer(connection, topic, startPosition);
             }
+            consumer.initializeBrokerDetails(brokersList);
         } catch (ConnectionException e) {
             e.printStackTrace();
         }
 
         String file = config.getFile();
         try (FileOutputStream writer = new FileOutputStream(file)){
-
             ByteString data;
             while (true){
-                data = consumer.poll(config.getTimeout());
-                if (data != null){
-                    writer.write(data.toByteArray());
-                    writer.write("\n".getBytes());
+                try {
+                    data = consumer.poll(config.getTimeout());
+                    if (data != null) {
+                        writer.write(data.toByteArray());
+                        writer.write("\n".getBytes());
+                    }
+                } catch (IOException | InterruptedException | ConnectionException e) {
+
                 }
             }
-        } catch (IOException | InterruptedException e) {
+        } catch (FileNotFoundException e) {
             e.printStackTrace();
-        } catch (ConnectionException e) {
-            LOGGER.info("Connection closed");
+        } catch (IOException e) {
+            e.printStackTrace();
         }
         LOGGER.info("Finished reading");
     }

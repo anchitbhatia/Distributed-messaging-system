@@ -1,12 +1,15 @@
 package api.consumer;
 
+import api.Connection;
 import com.google.protobuf.Any;
 import com.google.protobuf.ByteString;
 import messages.ConsumerRecord;
+import messages.Message;
 import messages.Request;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import utils.ConnectionException;
+import utils.Helper;
 import utils.Node;
 
 import java.io.IOException;
@@ -19,8 +22,8 @@ public class PullBasedConsumer extends Consumer implements Runnable{
     private static final Logger LOGGER = LogManager.getLogger(PullBasedConsumer.class);
     private Long nextOffset;
 
-    public PullBasedConsumer(Node brokerNode, String topic, Long offset) throws ConnectionException {
-        super(brokerNode, topic);
+    public PullBasedConsumer(Connection connection, String topic, Long offset) throws ConnectionException {
+        super(connection, topic);
         this.nextOffset = offset;
         Thread fetchingThread = new Thread(this, "Pull");
         fetchingThread.start();
@@ -33,7 +36,7 @@ public class PullBasedConsumer extends Consumer implements Runnable{
      */
     protected void requestBroker(Long offset) throws IOException {
         LOGGER.info("Requesting topic: " + this.topic + ", offset: " + offset);
-        Request.ConsumerRequest request = Request.ConsumerRequest.newBuilder().
+        Message.MessageRequest request = Message.MessageRequest.newBuilder().
                 setTopic(this.topic).
                 setOffset(offset).
                 build();
@@ -51,7 +54,7 @@ public class PullBasedConsumer extends Consumer implements Runnable{
             try {
                 Thread.sleep(50);
                 this.requestBroker(nextOffset);
-                ConsumerRecord.Message record = this.fetchBroker();
+                Message.MessageDetails record = this.fetchBroker();
                 if (record!=null){
                     ByteString data = record.getData();
                     if (data.size() != 0){
@@ -71,6 +74,7 @@ public class PullBasedConsumer extends Consumer implements Runnable{
                 } catch (IOException ex) {
                     ex.printStackTrace();
                 }
+                this.brokerConnection = Helper.connectAllBrokers(allBrokers, topic, null, false);
             }
         }
     }
