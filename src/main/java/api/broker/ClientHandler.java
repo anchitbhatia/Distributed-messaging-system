@@ -53,20 +53,20 @@ public class ClientHandler implements Runnable{
 
     @Override
     public void run() {
-        LOGGER.info("Connection established " + connection);
+//        LOGGER.info("Connection established " + connection);
         while (!connection.isClosed()) {
             byte[] message =  connection.receive();
             if (message != null) {
                 try {
                     Any packet = Any.parseFrom(message);
                     if (connectionType == null) {
-                        LOGGER.debug("Packet is " + packet);
+//                        LOGGER.debug("Packet is " + packet);
                         setConnectionType(packet);
                     }
 //                    LOGGER.debug("Received packet from " + connectionType);
                     switch (this.connectionType) {
 //                        case Constants.TYPE_MESSAGE -> this.broker.database.addQueue(packet.unpack(ProducerRecord.ProducerMessage.class));
-//                        case Constants.TYPE_CONSUMER -> serveRequest(packet.unpack(Request.ConsumerRequest.class));
+                        case Constants.TYPE_CONSUMER -> serveRequest(packet.unpack(Request.ConsumerRequest.class));
 //                        case Constants.TYPE_SUBSCRIBER -> newSubscriber(packet.unpack(Subscribe.SubscribeRequest.class));
                         case Constants.TYPE_PRODUCER -> this.broker.handleProducerRequest(connection, packet.unpack(Producer.ProducerRequest.class));
                         case Constants.TYPE_FOLLOWER -> this.broker.handleFollowRequest(connection, packet.unpack(FollowerRequest.class));

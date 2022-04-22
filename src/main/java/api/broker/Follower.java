@@ -4,13 +4,11 @@ import api.Connection;
 import com.google.protobuf.Any;
 import com.google.protobuf.ByteString;
 import com.google.protobuf.InvalidProtocolBufferException;
+import messages.*;
 import messages.BrokerRecord.BrokerMessage;
 import messages.Follower.FollowerRequest;
 import messages.Leader.LeaderDetails;
-import messages.Message;
 import messages.Node.NodeDetails;
-import messages.Producer;
-import messages.Replicate;
 import messages.Replicate.ReplicateMessage;
 import messages.Synchronization;
 import org.apache.logging.log4j.LogManager;
@@ -56,7 +54,17 @@ public class Follower extends BrokerState{
 
     @Override
     void handleProducerRequest(Connection connection, Producer.ProducerRequest request) {
-
+        Ack.AckMessage message = Ack.AckMessage.newBuilder().setAccept(false).build();
+        Any packet = Any.pack(message);
+        try {
+            connection.send(packet.toByteArray());
+        } catch (ConnectionException e) {
+            try {
+                connection.close();
+            } catch (IOException ex) {
+                ex.printStackTrace();
+            }
+        }
     }
 
     private void restartClientThread(){
