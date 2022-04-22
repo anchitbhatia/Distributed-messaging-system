@@ -101,7 +101,7 @@ public class Membership {
      * @param node : node to be checked
      * @return true if node exists in membership table else false
      */
-    private boolean checkMember(Node node){
+    protected boolean checkMember(Node node){
         return this.members.containsKey(node.getId());
     }
 
@@ -132,7 +132,7 @@ public class Membership {
     /***
      * Method to print members
      */
-    private void printMembers() {
+    public void printMembers() {
         LOGGER.info("Members: " + this.members.keySet());
     }
 }

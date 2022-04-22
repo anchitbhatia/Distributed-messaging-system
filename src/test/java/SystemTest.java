@@ -1,4 +1,9 @@
-import api.*;
+import api.Connection;
+import api.broker.Broker;
+import api.consumer.Consumer;
+import api.consumer.PullBasedConsumer;
+import api.consumer.PushBasedConsumer;
+import api.producer.Producer;
 import com.google.protobuf.ByteString;
 import org.junit.jupiter.api.*;
 import utils.ConnectionException;
@@ -23,11 +28,11 @@ class SystemTest {
 
     @BeforeAll
     static void setUp() throws IOException, ConnectionException {
-        brokerNode = new Node("localhost", brokerPort);
-        broker = new Broker(brokerPort);
-        broker.startServer();
-        producer = new Producer(brokerNode);
-        pullBasedConsumer = new PullBasedConsumer(brokerNode, topic, 0L);
+        brokerNode = new Node("localhost", brokerPort, 1);
+        broker = new Broker(brokerNode);
+        broker.startBroker();
+        producer = new Producer(new Connection(brokerNode));
+        pullBasedConsumer = new PullBasedConsumer(new Connection(brokerNode), topic, 0L);
         messages = new ArrayList<>();
         messages.add("hello");
         messages.add("world");
@@ -93,7 +98,7 @@ class SystemTest {
     @Test
     @Order(6)
     void pushBasedTest() throws InterruptedException, IOException, ConnectionException {
-        pushBasedConsumer = new PushBasedConsumer(brokerNode, topic);
+        pushBasedConsumer = new PushBasedConsumer(new Connection(brokerNode), topic);
         Thread.sleep(timeout);
         String msg = "test4";
         publish(msg);
@@ -101,44 +106,9 @@ class SystemTest {
         assertEquals(ByteString.copyFrom(msg.getBytes()), data);
     }
 
-    @Test
-    @Order(7)
-    void pushBasedTest2() throws InterruptedException, IOException, ConnectionException {
-        String msg = "test5";
-        publish(msg);
-        ByteString data = pushBasedConsumer.poll(timeout);
-        assertEquals(ByteString.copyFrom(msg.getBytes()), data);
-    }
-
-    @Test
-    @Order(8)
-    void pushBasedTest3() throws InterruptedException, IOException, ConnectionException {
-        String msg = "test6";
-        publish(msg);
-        ByteString data = pushBasedConsumer.poll(timeout);
-        assertEquals(ByteString.copyFrom(msg.getBytes()), data);
-    }
-
-    @Test
-    @Order(9)
-    void pushBasedNullTest() throws InterruptedException, IOException, ConnectionException {
-        ByteString data = pushBasedConsumer.poll(0);
-        assertNull(data);
-    }
-
-    @Test
-    @Order(10)
-    void pushBasedManyTest() throws IOException, InterruptedException, ConnectionException {
-        publishMany();
-        for (String msg: messages) {
-            ByteString data = pushBasedConsumer.poll(timeout);
-            assertEquals(ByteString.copyFrom(msg.getBytes()), data);
-        }
-    }
-
     @AfterAll
     static void shutdown() throws IOException {
-        broker.shutdown();
+
         producer.close();
         pushBasedConsumer.close();
         pullBasedConsumer.close();

@@ -42,7 +42,7 @@ public class Follower extends BrokerState{
             broker.addMember(broker.leader, leaderConnection, Constants.CONN_TYPE_MSG);
             broker.addMember(broker.leader, Constants.CONN_TYPE_HB);
         } catch (IOException e) {
-            e.printStackTrace();
+            LOGGER.error("IO exception occurred");
         }
         this.clientThread.start();
         this.syncThread.start();
@@ -64,7 +64,7 @@ public class Follower extends BrokerState{
             try {
                 connection.close();
             } catch (IOException ex) {
-                ex.printStackTrace();
+                LOGGER.error("IO exception occurred");
             }
         }
     }
@@ -110,6 +110,7 @@ public class Follower extends BrokerState{
      */
     private void connectLeader() throws IOException {
         this.leaderConnection = new Connection(this.broker.leader);
+        LOGGER.debug("Connection to leader " + this.broker.leader.getId() + " established");
         NodeDetails follower = messages.Node.NodeDetails.newBuilder().
                 setHostName(this.broker.node.getHostName()).
                 setPort(this.broker.node.getPort()).
@@ -152,7 +153,7 @@ public class Follower extends BrokerState{
 
         @Override
         public void run() {
-            LOGGER.debug("Data thread started");
+            LOGGER.debug("Client thread started");
 
             while (!leaderConnection.isClosed()) {
                 Any record = null;
@@ -177,7 +178,7 @@ public class Follower extends BrokerState{
                         close();
                     }
                 } catch (IOException e) {
-                    e.printStackTrace();
+                    LOGGER.error("IO exception occurred");
                 }
             }
         }

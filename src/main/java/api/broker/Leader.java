@@ -54,7 +54,6 @@ public class Leader extends BrokerState{
                     msgConnection.close();
                 } catch (IOException ex) {
                     LOGGER.error("Unable to replicate on broker" + msgConnection.getNode().getId());
-                    ex.printStackTrace();
                 }
             }
         }
@@ -81,7 +80,7 @@ public class Leader extends BrokerState{
                         this.replicateNewMessage(message, offset);
                         sendAck(connection);
                     } catch (InvalidProtocolBufferException e) {
-                        e.printStackTrace();
+                        LOGGER.info("Invalid protocol ");
                     }
                 }
             }
@@ -89,7 +88,7 @@ public class Leader extends BrokerState{
             try {
                 connection.close();
             } catch (IOException ex) {
-                ex.printStackTrace();
+                LOGGER.error("IO exception occurred");
             }
         }
     }

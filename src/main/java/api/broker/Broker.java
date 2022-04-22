@@ -73,7 +73,7 @@ public class Broker {
                     client.start();
                 }
             } catch (IOException e) {
-                e.printStackTrace();
+                LOGGER.error("IO exception occurred while starting server socket");
             }
         }, "server");
         this.database = new Database();
@@ -122,7 +122,7 @@ public class Broker {
      * @param connection : connection to be added
      * @param connType : type of the connection to be added
      */
-    protected void addMember(Node node, Connection connection, String connType) {
+    public void addMember(Node node, Connection connection, String connType) {
         if (node.getId()!=this.node.getId()) {
             this.membership.addMember(node, connection, connType);
         }
@@ -133,7 +133,7 @@ public class Broker {
      * @param node node object of the member to be added
      * @param connType connection to be added
      */
-    protected void addMember(Node node, String connType) {
+    public void addMember(Node node, String connType) {
         if (node.getId()!=this.node.getId()) {
             try {
                 this.membership.addMember(node, connType);
@@ -147,7 +147,7 @@ public class Broker {
      * Method to remove member from membership table
      * @param id : id of the broker to be removed
      */
-    protected void removeMember(int id) {
+    public void removeMember(int id) {
         LOGGER.warn("Removing broker " + id);
         this.membership.removeMember(id);
         this.heartBeatModule.removeMember(id);
@@ -158,8 +158,16 @@ public class Broker {
      * @param id : id of the broker to be removed
      * @param type : type of the connection of the member to be removed
      */
-    protected void removeMember(int id, String type) {
+    public void removeMember(int id, String type) {
         this.membership.removeConnection(id, type);
+    }
+
+    public boolean checkMember(Node node) {
+        return this.membership.checkMember(node);
+    }
+
+    public void printMembers() {
+        this.membership.printMembers();
     }
 
     /***
@@ -168,7 +176,7 @@ public class Broker {
      * @param type : type of the message to be added
      * @return required offset
      */
-    protected Long addMessage(MessageDetails message, String type) {
+    public Long addMessage(MessageDetails message, String type) {
         if (!(Objects.equals(type, Constants.TYPE_SYNC)) && this.synchronization.isSyncing()) {
             this.synchronization.bufferMessage(message);
             return null;
@@ -181,7 +189,7 @@ public class Broker {
      * @param message : new message to be added
      * @return required offset
      */
-    protected Long addMessage(NewMessage message) {
+    public Long addMessage(NewMessage message) {
         return this.database.addMessage(message.getTopic(), message.getData().toByteArray());
     }
 
@@ -189,7 +197,7 @@ public class Broker {
      * Method to get msg connections
      * @return list of connections
      */
-    protected List<Connection> getMsgConnections() {
+    public List<Connection> getMsgConnections() {
         return this.membership.getMsgConnections();
     }
 
@@ -197,7 +205,7 @@ public class Broker {
      * Method to get heartbeat connections
      * @return list of connections
      */
-    protected List<Connection> getHbConnections() {
+    public List<Connection> getHbConnections() {
         return this.membership.getHbConnections();
     }
 
@@ -205,7 +213,7 @@ public class Broker {
      * Method to get members in membership table
      * @return list of nodes
      */
-    protected List<Node> getMembers() {
+    public List<Node> getMembers() {
         return this.membership.getMembers();
     }
 
@@ -213,7 +221,7 @@ public class Broker {
      * Method to get snapshot of curentOffsetMap
      * @return Map with topic as key and currentoffset required as value
      */
-    protected Map<String, Long> getCurrentOffsetSnapshot() {
+    public Map<String, Long> getCurrentOffsetSnapshot() {
         return this.database.getCurrentOffsetSnapshot();
     }
 
@@ -222,7 +230,7 @@ public class Broker {
      * @param connection : connection object
      * @param type : type of synchronization required
      */
-    protected void initiateSync(Connection connection, String type) {
+    public void initiateSync(Connection connection, String type) {
         if (Objects.equals(type, Constants.SYNC_SEND)) {
             this.synchronization.startSender(connection);
         }
@@ -234,7 +242,7 @@ public class Broker {
     /***
      * Method to initiate election
      */
-    protected synchronized void initiateElection() {
+    public synchronized void initiateElection() {
         if (!this.electionInProgress) {
             this.electionInProgress = true;
             this.removeMember(this.leader.getId());
@@ -245,7 +253,7 @@ public class Broker {
     /***
      * Method to stop election
      */
-    protected void stopElection() {
+    public void stopElection() {
         this.electionInProgress = false;
         this.election.stopElectionTask();
     }
@@ -256,7 +264,7 @@ public class Broker {
      * @param request : message request containing request details
      * @throws IOException if unable to close connection
      */
-    protected void serveMessageRequest(Connection connection, MessageRequest request) throws IOException {
+    public void serveMessageRequest(Connection connection, MessageRequest request) throws IOException {
         String topic = request.getTopic();
         long offset = request.getOffset();
         LOGGER.info("Message request | topic: " + topic + ", offset: " + offset);
@@ -292,7 +300,7 @@ public class Broker {
      * @param connection : connection object
      * @param message : election initiate message
      */
-    protected void handleElectionInitiateMessage (Connection connection, ElectionInitiate message) {
+    public void handleElectionInitiateMessage (Connection connection, ElectionInitiate message) {
         LOGGER.info("Received election initiation message from " + connection.getNode().getId());
         AckMessage ackMessage = AckMessage.newBuilder().setAccept(true).build();
         LOGGER.info("Sending Ack to " + connection.getNode().getId());
@@ -300,7 +308,7 @@ public class Broker {
         try {
             connection.send(packet.toByteArray());
         } catch (ConnectionException e) {
-            e.printStackTrace();
+            LOGGER.error("Unable to send message");
         }
         this.initiateElection();
     }
@@ -309,7 +317,7 @@ public class Broker {
      * Method to handle victory message
      * @param message : victory message
      */
-    protected void handleVictoryMessage(VictoryMessage message) {
+    public void handleVictoryMessage(VictoryMessage message) {
         Node node = Helper.getNodeObj(message.getLeader());
         LOGGER.info("Received victory message from " + node.getId());
         this.removeMember(this.leader.getId());
@@ -323,7 +331,7 @@ public class Broker {
      * @param connection : connection object
      * @param request : request details of the producer
      */
-    protected void handleProducerRequest(Connection connection, ProducerRequest request) {
+    public void handleProducerRequest(Connection connection, ProducerRequest request) {
         this.state.handleProducerRequest(connection, request);
     }
 
@@ -333,7 +341,7 @@ public class Broker {
      * @param request : request details of the follower
      * @throws IOException if unable to close connection
      */
-    protected void handleFollowRequest(Connection connection, FollowerRequest request) throws IOException {
+    public void handleFollowRequest(Connection connection, FollowerRequest request) throws IOException {
         connection.setNodeFields(request.getNode());
         this.state.handleFollowRequest(connection, request);
     }
@@ -343,7 +351,7 @@ public class Broker {
      * @param connection : connection object
      * @param message : heart beat message received
      */
-    protected void handleHeartBeat(Connection connection, HeartBeatMessage message) {
+    public void handleHeartBeat(Connection connection, HeartBeatMessage message) {
         NodeDetails node = message.getNode();
         connection.setNodeFields(node);
         this.heartBeatModule.parseHeartBeat(message);
@@ -354,7 +362,7 @@ public class Broker {
      * @param connection : connection object
      * @param request : request details for synchronization
      */
-    protected void handleSyncRequest(Connection connection, SyncRequest request) {
+    public void handleSyncRequest(Connection connection, SyncRequest request) {
         NodeDetails broker = request.getNode();
         LOGGER.info("Sync request from " + broker.getId());
         connection.setNodeFields(broker);

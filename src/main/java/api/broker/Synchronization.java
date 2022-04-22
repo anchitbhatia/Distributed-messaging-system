@@ -106,10 +106,10 @@ public class Synchronization {
             try {
                 connection.close();
             } catch (IOException ex) {
-                ex.printStackTrace();
+                LOGGER.error("IO exception occurred");
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            LOGGER.error("IO exception occurred");
         }
     }
 
@@ -132,7 +132,7 @@ public class Synchronization {
                 this.isSyncing = false;
                 return;
             } catch (IOException ex) {
-                ex.printStackTrace();
+                LOGGER.error("IO exception occurred");
             }
         }
         Map<String, Long> receivedSnapshot = null;
@@ -163,14 +163,14 @@ public class Synchronization {
                     offset = this.broker.addMessage(details, Constants.TYPE_SYNC);
 
                 } catch (InvalidProtocolBufferException e) {
-                    e.printStackTrace();
+                    LOGGER.error("Invalid protocol buffer exception");
                 } catch (ConnectionException e) {
                     try {
                         connection.close();
                         this.isSyncing = false;
                         return;
                     } catch (IOException ex) {
-                        ex.printStackTrace();
+                        LOGGER.error("IO exception occurred");
                     }
                 }
             }
@@ -185,7 +185,7 @@ public class Synchronization {
             try {
                 connection.close();
             } catch (IOException ex) {
-                ex.printStackTrace();
+                LOGGER.error("IO exception occurred");
             }
         }
         LOGGER.info("Adding buffered data to database");

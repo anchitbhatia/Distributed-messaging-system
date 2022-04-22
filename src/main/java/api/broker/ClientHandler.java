@@ -91,7 +91,7 @@ public class ClientHandler implements Runnable{
                         default -> LOGGER.info("Invalid client");
                     }
                 } catch (IOException e) {
-                    e.printStackTrace();
+                    LOGGER.error("IO exception occurred");
                 }
             } else {
                 LOGGER.info("Connection disconnected " + connection);
@@ -101,7 +101,7 @@ public class ClientHandler implements Runnable{
 //                        this.broker.removeMember(this.connection.getNode().getId());
 //                    }
                 } catch (IOException e) {
-                    e.printStackTrace();
+                    LOGGER.error("IO exception occurred");
                 }
             }
         }

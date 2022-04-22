@@ -34,7 +34,7 @@ public class Election {
             try {
                 connection.send(packet.toByteArray());
             } catch (ConnectionException e) {
-                e.printStackTrace();
+                LOGGER.error("Unable to connect");
             }
         }
     }
@@ -69,7 +69,7 @@ public class Election {
                     otherBrokersExist = true;
                 } catch (ConnectionException e) {
                     LOGGER.error("Unable to send initiate message to " + connection.getNode().getId());
-                    e.printStackTrace();
+
                 }
             }
         }

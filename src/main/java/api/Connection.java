@@ -95,7 +95,7 @@ public class Connection {
         catch (SocketException exception) {
             return null;
         } catch (IOException exception) {
-            exception.printStackTrace();
+            LOGGER.info("IO exception while reading message");
         }
         return buffer;
     }
@@ -111,10 +111,9 @@ public class Connection {
                 this.outputStream.write(message);
             }
         } catch (SocketException e) {
-            LOGGER.error("Broken pipe");
             throw new ConnectionException("Unable to send. Broken pipe.");
         } catch (IOException e) {
-            e.printStackTrace();
+            LOGGER.info("IO exception while sending message");
         }
     }
 

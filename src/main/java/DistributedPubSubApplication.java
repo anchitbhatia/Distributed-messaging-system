@@ -69,7 +69,7 @@ public class DistributedPubSubApplication {
         try {
             producer.close();
         } catch (IOException e) {
-            e.printStackTrace();
+            LOGGER.error("IO exception occurred");
         }
         LOGGER.info("Finished publishing");
     }
@@ -89,7 +89,7 @@ public class DistributedPubSubApplication {
             }
             broker.startBroker();
         } catch (IOException e) {
-            e.printStackTrace();
+            LOGGER.error("IO exception occurred");
         }
     }
 
@@ -117,7 +117,7 @@ public class DistributedPubSubApplication {
             }
             consumer.initializeBrokerDetails(brokersList);
         } catch (ConnectionException e) {
-            e.printStackTrace();
+            LOGGER.error("IO exception occurred");
         }
 
         String file = config.getFile();
@@ -135,9 +135,9 @@ public class DistributedPubSubApplication {
                 }
             }
         } catch (FileNotFoundException e) {
-            e.printStackTrace();
+            LOGGER.error("IO exception occurred");
         } catch (IOException e) {
-            e.printStackTrace();
+            LOGGER.error("IO exception occurred");
         }
         LOGGER.info("Finished reading");
     }
@@ -153,7 +153,7 @@ public class DistributedPubSubApplication {
                 case Constants.TYPE_CONSUMER -> consumerNode((ConsumerConfig) config);
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            LOGGER.error("Exception occurred");
         }
     }
 }

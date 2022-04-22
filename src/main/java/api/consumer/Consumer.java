@@ -68,7 +68,7 @@ public class Consumer {
                 this.close();
                 throw new ConnectionException("Connection closed!");
             } catch (InvalidProtocolBufferException e) {
-                e.printStackTrace();
+
             }
         }
         return null;
