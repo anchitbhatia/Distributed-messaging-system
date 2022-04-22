@@ -1,19 +1,12 @@
 import api.Connection;
 import api.broker.Broker;
-//import api.broker.BrokerOld;
-//
-//
-//import api.broker.LeaderOld;
 import api.consumer.Consumer;
 import api.consumer.PullBasedConsumer;
 import api.consumer.PushBasedConsumer;
 import api.producer.Producer;
 import com.google.protobuf.Any;
-import com.google.protobuf.ByteString;
-import com.google.protobuf.InvalidProtocolBufferException;
+import com.google.protobuf.ByteString;;
 import configs.ConsumerConfig;
-import messages.Ack;
-import messages.Leader;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import utils.ConnectionException;
@@ -24,7 +17,6 @@ import configs.ProducerConfig;
 import utils.*;
 
 import java.io.*;
-import java.net.Socket;
 import java.util.List;
 import java.util.Objects;
 import java.util.Scanner;

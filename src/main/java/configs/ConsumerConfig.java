@@ -2,13 +2,15 @@ package configs;
 
 import utils.Node;
 
+import java.util.List;
+
 /***
  * Class to parse consumer config
  * @author anchitbhatia
  */
 public class ConsumerConfig {
     private Node host;
-    private Node broker;
+    private List<Node> brokers;
     private String topic;
     private String type;
     private String file;
@@ -19,8 +21,8 @@ public class ConsumerConfig {
         return host;
     }
 
-    public Node getBroker() {
-        return broker;
+    public List<Node> getBrokers() {
+        return brokers;
     }
 
     public String getTopic() {

@@ -27,19 +27,12 @@ public class Membership {
         this.hbConnections = new ConcurrentHashMap<>();
     }
 
-//    protected synchronized void replaceMembers(List<NodeDetails> membersList) {
-//        LOGGER.info("Replacing members list");
-//        ConcurrentHashMap<Integer, Node> newMembers = new ConcurrentHashMap<>();
-//        for (NodeDetails item: membersList) {
-//            if (!newMembers.containsKey(item.getId())) {
-//                Node node = new Node(item.getHostName(), item.getPort(), item.getId());
-//                newMembers.put(item.getId(), node);
-//            }
-//        }
-//        members = newMembers;
-//        LOGGER.info("New members list " + members);
-//    }
-
+    /***
+     * Method to add member to membership table
+     * @param node : node object of the member to be added
+     * @param conn : connection to be added
+     * @param connType : type of the connection to be added
+     */
     protected synchronized void addMember(Node node, Connection conn, String connType) {
         if (!checkMember(node)) {
             members.put(node.getId(), node);
@@ -66,14 +59,19 @@ public class Membership {
         }
     }
 
+    /***
+     * Method to add member to membership table
+     * @param node node object of the member to be added
+     * @param connType connection to be added
+     */
     protected synchronized void addMember(Node node, String connType) throws IOException {
         this.addMember(node, null, connType);
     }
 
-//    public void removeMember(Node node){
-//        removeMember(node.getId());
-//    }
-
+    /***
+     * Method to remove member from membership table
+     * @param id : id of the broker to be removed
+     */
     protected synchronized void removeMember(int id) {
         Node node = this.members.remove(id);
         if (node == null) {
@@ -84,6 +82,11 @@ public class Membership {
         this.printMembers();
     }
 
+    /***
+     * Method to remove member from membership table
+     * @param id : id of the broker to be removed
+     * @param type : type of the connection of the member to be removed
+     */
     protected synchronized void removeConnection(int id, String type) {
         if (Objects.equals(type, Constants.CONN_TYPE_MSG)) {
             this.msgConnections.remove(id);
@@ -93,22 +96,42 @@ public class Membership {
         }
     }
 
+    /***
+     * Method to check member in membership table
+     * @param node : node to be checked
+     * @return true if node exists in membership table else false
+     */
     private boolean checkMember(Node node){
         return this.members.containsKey(node.getId());
     }
 
+    /***
+     * Method to get members in membership table
+     * @return list of nodes
+     */
     protected List<Node> getMembers(){
         return new CopyOnWriteArrayList<>(this.members.values());
     }
 
+    /***
+     * Method to get msg connections
+     * @return list of connections
+     */
     protected List<Connection> getMsgConnections() {
         return new CopyOnWriteArrayList<>(this.msgConnections.values());
     }
 
+    /***
+     * Method to get heartbeat connections
+     * @return list of connections
+     */
     protected List<Connection> getHbConnections() {
         return new CopyOnWriteArrayList<>(this.hbConnections.values());
     }
 
+    /***
+     * Method to print members
+     */
     private void printMembers() {
         LOGGER.info("Members: " + this.members.keySet());
     }

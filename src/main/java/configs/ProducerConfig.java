@@ -2,13 +2,15 @@ package configs;
 
 import utils.Node;
 
+import java.util.ArrayList;
+
 /***
  * Class to parse Producer config
  * @author anchitbhatia
  */
 public class ProducerConfig {
     private Node host;
-    private Node broker;
+    private ArrayList<Node> brokers;
     private String topic;
     private String file;
 
@@ -16,8 +18,8 @@ public class ProducerConfig {
         return host;
     }
 
-    public Node getBroker() {
-        return broker;
+    public ArrayList<Node> getBrokers() {
+        return brokers;
     }
 
     public String getTopic() {
