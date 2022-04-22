@@ -1,0 +1,14 @@
+syntax = "proto3";
+
+import "protos/node.proto";
+
+option java_package = "messages";
+option java_outer_classname = "Election";
+
+message ElectionInitiate{
+  NodeDetails initiator = 1;
+}
+
+message VictoryMessage{
+ NodeDetails leader = 1;
+}
