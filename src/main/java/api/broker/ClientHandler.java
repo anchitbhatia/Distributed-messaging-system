@@ -2,6 +2,9 @@ package api.broker;
 
 import api.Connection;
 import com.google.protobuf.Any;
+import messages.Ack;
+import messages.Election.ElectionInitiate;
+import messages.Election.VictoryMessage;
 import messages.Follower.FollowerRequest;
 import messages.HeartBeat.HeartBeatMessage;
 import messages.Producer;
@@ -57,16 +60,29 @@ public class ClientHandler implements Runnable{
                 try {
                     Any packet = Any.parseFrom(message);
                     if (connectionType == null) {
+                        LOGGER.debug("Packet is " + packet);
                         setConnectionType(packet);
                     }
-                    LOGGER.debug("Received packet from " + connectionType);
+//                    LOGGER.debug("Received packet from " + connectionType);
                     switch (this.connectionType) {
 //                        case Constants.TYPE_MESSAGE -> this.broker.database.addQueue(packet.unpack(ProducerRecord.ProducerMessage.class));
 //                        case Constants.TYPE_CONSUMER -> serveRequest(packet.unpack(Request.ConsumerRequest.class));
 //                        case Constants.TYPE_SUBSCRIBER -> newSubscriber(packet.unpack(Subscribe.SubscribeRequest.class));
                         case Constants.TYPE_PRODUCER -> this.broker.handleProducerRequest(connection, packet.unpack(Producer.ProducerRequest.class));
                         case Constants.TYPE_FOLLOWER -> this.broker.handleFollowRequest(connection, packet.unpack(FollowerRequest.class));
-                        case Constants.TYPE_HEARTBEAT ->  this.broker.handleHeartBeat(connection, packet.unpack(HeartBeatMessage.class));
+                        case Constants.TYPE_HEARTBEAT -> {
+                            if (packet.is(HeartBeatMessage.class)) {
+                                this.broker.handleHeartBeat(connection, packet.unpack(HeartBeatMessage.class));
+                            } else if (packet.is(ElectionInitiate.class)) {
+                                this.broker.handleElectionInitiateMessage(connection, packet.unpack(ElectionInitiate.class));
+                            } else if (packet.is(VictoryMessage.class)) {
+                                this.broker.handleVictoryMessage(packet.unpack(VictoryMessage.class));
+                            } else if (packet.is(Ack.AckMessage.class)) {
+                                this.broker.stopElection();
+                            } else {
+                                LOGGER.error("Invalid packet: " + packet);
+                            }
+                        }
                         case Constants.TYPE_SYNC -> this.broker.handleSyncRequest(connection, packet.unpack(SyncRequest.class));
                         default -> LOGGER.info("Invalid client");
                     }

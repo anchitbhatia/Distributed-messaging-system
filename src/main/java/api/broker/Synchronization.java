@@ -115,11 +115,11 @@ public class Synchronization {
         }
     }
 
-    public void startReceiver(Node leader) {
-        LOGGER.info("Initiating synchronization");
+    public void startReceiver(Node node) {
+        LOGGER.info("Initiating synchronization from " + node.getId());
         Connection connection = null;
         try {
-            connection = new Connection(leader);
+            connection = new Connection(node);
         } catch (IOException e) {
             LOGGER.error("Unable to connect to leader");
             LOGGER.error("Synchronization failed");

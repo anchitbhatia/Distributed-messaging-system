@@ -6,6 +6,7 @@ import org.apache.logging.log4j.Logger;
 import utils.Constants;
 import utils.Node;
 
+import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -45,13 +46,28 @@ public class Membership {
             LOGGER.debug("New member added " + node);
             printMembers();
         }
-        if (Objects.equals(connType, Constants.CONN_TYPE_MSG) && !msgConnections.containsKey(node.getId())) {
-            msgConnections.put(node.getId(), conn);
-        } else if (Objects.equals(connType, Constants.CONN_TYPE_HB) && !hbConnections.containsKey(node.getId())) {
-            hbConnections.put(node.getId(), conn);
+        try {
+            if (Objects.equals(connType, Constants.CONN_TYPE_MSG) && !msgConnections.containsKey(node.getId())) {
+                if (conn == null) {
+                    conn = new Connection(node);
+                }
+                msgConnections.put(node.getId(), conn);
+                LOGGER.debug("New msg connection added " + node);
+            } else if (Objects.equals(connType, Constants.CONN_TYPE_HB) && !hbConnections.containsKey(node.getId())) {
+                if (conn == null) {
+                    conn = new Connection(node);
+                }
+                hbConnections.put(node.getId(), conn);
+                LOGGER.debug("New hb connection added " + node);
+            }
+        } catch (IOException e) {
+            LOGGER.error("Unable to create connection " + connType);
+            removeMember(node.getId());
         }
+    }
 
-
+    protected synchronized void addMember(Node node, String connType) throws IOException {
+        this.addMember(node, null, connType);
     }
 
 //    public void removeMember(Node node){
@@ -66,6 +82,15 @@ public class Membership {
         this.msgConnections.remove(id);
         this.hbConnections.remove(id);
         this.printMembers();
+    }
+
+    protected synchronized void removeConnection(int id, String type) {
+        if (Objects.equals(type, Constants.CONN_TYPE_MSG)) {
+            this.msgConnections.remove(id);
+        }
+        else if (Objects.equals(type, Constants.CONN_TYPE_HB)) {
+            this.hbConnections.remove(id);
+        }
     }
 
     private boolean checkMember(Node node){

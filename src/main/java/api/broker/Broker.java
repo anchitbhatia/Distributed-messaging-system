@@ -3,6 +3,8 @@ package api.broker;
 import api.Connection;
 import com.google.protobuf.Any;
 import com.google.protobuf.ByteString;
+import messages.Ack;
+import messages.Node.NodeDetails;
 import messages.HeartBeat.HeartBeatMessage;
 import messages.Follower.FollowerRequest;
 import messages.Message;
@@ -13,6 +15,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import utils.ConnectionException;
 import utils.Constants;
+import utils.Helper;
 import utils.Node;
 
 import java.io.IOException;
@@ -35,6 +38,8 @@ public class Broker {
     protected final HeartBeatModule heartBeatModule;
     protected final FailureDetectorModule failureDetectorModule;
     protected final Synchronization synchronization;
+    protected final Election election;
+    protected boolean electionInProgress;
 
     public Broker(Node node) throws IOException {
         this(node, node);
@@ -70,6 +75,7 @@ public class Broker {
         this.heartBeatModule = new HeartBeatModule(this);
         this.failureDetectorModule = new FailureDetectorModule(this);
         this.synchronization = new Synchronization(this);
+        this.election = new Election(this);
     }
 
     public void startBroker(){
@@ -93,12 +99,29 @@ public class Broker {
     }
 
     protected void addMember(Node node, Connection connection, String connType) {
-        this.membership.addMember(node, connection, connType);
+        if (node.getId()!=this.node.getId()) {
+            this.membership.addMember(node, connection, connType);
+        }
+    }
+
+    protected void addMember(Node node, String connType) {
+        if (node.getId()!=this.node.getId()) {
+            try {
+                this.membership.addMember(node, connType);
+            } catch (IOException e) {
+                LOGGER.error("Unable to add member");
+            }
+        }
     }
 
     protected void removeMember(int id) {
+        LOGGER.warn("Removing broker " + id);
         this.membership.removeMember(id);
         this.heartBeatModule.removeMember(id);
+    }
+
+    protected void removeMember(int id, String type) {
+        this.membership.removeConnection(id, type);
     }
 
     protected Long addMessage(MessageDetails message, String type) {
@@ -135,8 +158,23 @@ public class Broker {
             this.synchronization.startSender(connection);
         }
         else if (Objects.equals(type, Constants.SYNC_RECEIVE)) {
-            this.synchronization.startReceiver(this.leader);
+            this.synchronization.startReceiver(connection.getNode());
         }
+    }
+
+    protected synchronized void initiateElection() {
+//        this.heartBeatModule.stopModule();
+        if (!this.electionInProgress) {
+            this.electionInProgress = true;
+            this.removeMember(this.leader.getId());
+            this.election.initiateElection();
+        }
+
+    }
+
+    protected void stopElection() {
+        this.electionInProgress = false;
+        this.election.stopElectionTask();
     }
 
     protected void serveMessageRequest(Connection connection, Message.MessageRequest request) throws IOException {
@@ -170,6 +208,28 @@ public class Broker {
         LOGGER.info("Sent | topic: " + topic + ", offset: " + offset);
     }
 
+    protected void handleElectionInitiateMessage (Connection connection, messages.Election.ElectionInitiate message) {
+        LOGGER.info("Received election initiation message from " + connection.getNode().getId());
+        Ack.AckMessage ackMessage = Ack.AckMessage.newBuilder().setAccept(true).build();
+        LOGGER.info("Sending Ack to " + connection.getNode().getId());
+        Any packet = Any.pack(ackMessage);
+        try {
+            connection.send(packet.toByteArray());
+        } catch (ConnectionException e) {
+            e.printStackTrace();
+        }
+        this.initiateElection();
+    }
+
+    protected void handleVictoryMessage(messages.Election.VictoryMessage message) {
+        Node node = Helper.getNodeObj(message.getLeader());
+        LOGGER.info("Received victory message from " + node.getId());
+        this.removeMember(this.leader.getId());
+        this.setNewLeader(node);
+        this.stopElection();
+        this.changeState(new Follower(this));
+    }
+
     protected void handleProducerRequest(Connection connection, ProducerRequest request) {
         this.state.handleProducerRequest(connection, request);
     }
@@ -183,7 +243,7 @@ public class Broker {
 //        handler.heartBeatCount++;
         messages.Node.NodeDetails node = message.getNode();
         connection.setNodeFields(node);
-        this.addMember(connection.getNode(), connection, Constants.CONN_TYPE_HB);
+//        this.addMember(connection.getNode(), connection, Constants.CONN_TYPE_HB);
         this.heartBeatModule.parseHeartBeat(message);
 //        if (clientHandler.heartBeatCount > 10) {
 //            this.broker.membership.replaceMembers(message.getMembersList());
@@ -192,6 +252,9 @@ public class Broker {
     }
 
     protected void handleSyncRequest(Connection connection, messages.Synchronization.SyncRequest request) {
-        this.state.handleSyncRequest(connection, request);
+        NodeDetails broker = request.getNode();
+        LOGGER.info("Sync request from " + broker.getId());
+        connection.setNodeFields(broker);
+        this.initiateSync(connection, Constants.SYNC_SEND);
     }
 }

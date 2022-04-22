@@ -17,6 +17,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import utils.ConnectionException;
 import utils.Constants;
+import utils.Helper;
 import utils.Node;
 
 import java.io.IOException;
@@ -27,15 +28,23 @@ public class Follower extends BrokerState{
     private Thread clientThread;
     private Thread syncThread;
 
-    public Follower(Broker broker) throws IOException {
+    public Follower(Broker broker) {
         super(broker);
+        LOGGER.info("Starting follower");
         this.leaderConnection = null;
         this.clientThread = new Thread(new ClientThread(), "client");
-        this.syncThread = new Thread(() -> broker.initiateSync(null, Constants.SYNC_RECEIVE));
+        this.syncThread = new Thread(() -> broker.initiateSync(this.leaderConnection, Constants.SYNC_RECEIVE));
     }
 
     public void startBroker(){
         LOGGER.info("Starting clientThread");
+        try {
+            connectLeader();
+            broker.addMember(broker.leader, leaderConnection, Constants.CONN_TYPE_MSG);
+            broker.addMember(broker.leader, Constants.CONN_TYPE_HB);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
         this.clientThread.start();
         this.syncThread.start();
     }
@@ -56,26 +65,24 @@ public class Follower extends BrokerState{
 
     @Override
     void handleFollowRequest(Connection connection, messages.Follower.FollowerRequest request) throws IOException {
-        LeaderDetails leader = LeaderDetails.newBuilder().
-                setHostName(this.broker.leader.getHostName()).
-                setPort(this.broker.leader.getPort()).
-                setId(this.broker.leader.getId()).
-                build();
+        NodeDetails leaderNode = Helper.getNodeDetailsObj(this.broker.leader);
+        LeaderDetails leader = LeaderDetails.newBuilder().setLeader(leaderNode).build();
         Any packet = Any.pack(leader);
         try {
             connection.send(packet.toByteArray());
-            LOGGER.info("Sending leader details to " + request.getNode());
+            LOGGER.info("Sending leader details to " + request.getNode().getId());
         } catch (ConnectionException ignored) {
         } finally {
-            this.broker.addMember(connection.getNode(), new Connection(connection.getNode()), Constants.CONN_TYPE_HB);
+            this.broker.addMember(connection.getNode(), Constants.CONN_TYPE_HB);
             connection.close();
         }
     }
 
     @Override
-    void handleLeaderDetails(LeaderDetails leaderDetails) throws IOException {
-        Node newLeader = new Node(leaderDetails.getHostName(), leaderDetails.getPort(), leaderDetails.getId());
+    void   handleLeaderDetails(LeaderDetails leaderDetails) throws IOException {
+        Node newLeader = Helper.getNodeObj(leaderDetails.getLeader());
         LOGGER.info("Received details of leader " + newLeader.getId());
+        this.broker.removeMember(newLeader.getId(), Constants.CONN_TYPE_MSG);
         this.broker.setNewLeader(newLeader);
         this.broker.changeState(new Follower(this.broker));
     }
@@ -121,13 +128,7 @@ public class Follower extends BrokerState{
         @Override
         public void run() {
             LOGGER.debug("Data thread started");
-            try {
-                connectLeader();
-                broker.addMember(broker.leader, leaderConnection, Constants.CONN_TYPE_MSG);
-                broker.addMember(broker.leader, new Connection(broker.leader), Constants.CONN_TYPE_HB);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+
             while (!leaderConnection.isClosed()) {
                 Any record = null;
                 try {

@@ -21,32 +21,54 @@ import java.util.concurrent.ConcurrentHashMap;
 public class HeartBeatModule {
     private static final Logger LOGGER = LogManager.getLogger("HBmodule");
     private final Broker broker;
-//    private final ConcurrentHashMap<Integer, Connection> heartBeatConnections;
     private final ConcurrentHashMap<Integer, Long> heartBeatReceiveTimes;
+    private final List<Integer> recentlyRemoved;
     private final Scheduler scheduler;
 
     public HeartBeatModule(Broker broker) {
+        LOGGER.debug("Initializing Heartbeat module");
         this.broker = broker;
-//        this.heartBeatConnections = new ConcurrentHashMap<>();
         this.heartBeatReceiveTimes = new ConcurrentHashMap<>();
+        this.recentlyRemoved = new ArrayList<>();
         this.scheduler = new Scheduler(Constants.HB_SCHEDULER_TIME);
     }
 
     protected synchronized void removeMember(int id) {
-        heartBeatReceiveTimes.remove(id);
-//        heartBeatConnections.remove(id);
+        LOGGER.warn("Removing heart beat receive times " + id);
+        this.recentlyRemoved.add(id);
+        this.heartBeatReceiveTimes.remove(id);
     }
 
     public void startModule(){
+        LOGGER.debug("Starting Heartbeat module");
         this.scheduler.scheduleTask(new HeartBeatSenderTask());
     }
 
     public void parseHeartBeat(HeartBeatMessage message) {
         int id = message.getNode().getId();
         long time = System.nanoTime();
+//        LOGGER.info("Received heartbeat from " + id + " at " + time);
         this.heartBeatReceiveTimes.put(id, time);
-        LOGGER.info("Heartbeat received from " + id + ", members: " + message.getMembersList().size());
-//        LOGGER.info("Members received: " + message.getMembersList().size());
+        List<NodeDetails> membersReceived = message.getMembersList();
+        List<Node> nodes = this.broker.getMembers();
+        List<Integer> ids = new ArrayList<>();
+        for (Node node: nodes) {
+            ids.add(node.getId());
+        }
+//        LOGGER.info("Current members: " + ids);
+//        LOGGER.info("Received heartbeat from " + id + ", membersReceived: " + membersReceived.size());
+        for (NodeDetails member: membersReceived) {
+            Node node = new Node(member.getHostName(), member.getPort(), member.getId());
+            if ((this.broker. node.getId() != node.getId()) && !(this.recentlyRemoved.contains(node.getId()))) {
+                this.broker.addMember(node, Constants.CONN_TYPE_HB);
+            }
+        }
+        nodes = this.broker.getMembers();
+        ids = new ArrayList<>();
+        for (Node node: nodes) {
+            ids.add(node.getId());
+        }
+//        LOGGER.info("Current members: " + ids);
     }
 
     public ConcurrentHashMap<Integer, Long> getHeartBeatReceiveTimes(){
@@ -60,7 +82,6 @@ public class HeartBeatModule {
     private class HeartBeatSenderTask extends TimerTask {
         @Override
         public void run() {
-//            LOGGER.info("Heartbeat sender task started");
             NodeDetails nodeDetails = messages.Node.NodeDetails.newBuilder().
                     setHostName(broker.node.getHostName()).
                     setPort(broker.node.getPort()).
@@ -68,8 +89,6 @@ public class HeartBeatModule {
                     build();
 
             ArrayList<messages.Node.NodeDetails> allNodes = new ArrayList<>();
-
-//            ArrayList<Connection> connections = new ArrayList<>();
 
             List<Node> members = broker.getMembers();
 
@@ -80,16 +99,7 @@ public class HeartBeatModule {
                         setId(node.getId()).
                         build();
                 allNodes.add(memberNode);
-//                if (!heartBeatConnections.containsKey(node.getId())){
-//                    try {
-//                        heartBeatConnections.put(node.getId(), new Connection(node));
-//                    } catch (IOException e) {
-//                        e.printStackTrace();
-//                    }
-//                }
-//                connections.add(heartBeatConnections.get(node.getId()));
             }
-
                 messages.Node.NodeDetails currentNode = messages.Node.NodeDetails.newBuilder().
                         setHostName(broker.node.getHostName()).
                         setPort(broker.node.getPort()).
@@ -117,7 +127,8 @@ public class HeartBeatModule {
 //                    LOGGER.debug("Sending heartbeat to " + conn.getNode().getId());
                     conn.send(packet.toByteArray());
                 } catch (ConnectionException e) {
-                    broker.removeMember(conn.getNode().getId());
+//                    LOGGER.error("Connection closed");
+//                    broker.removeMember(conn.getNode().getId());
                 }
             }
             scheduler.scheduleTask(new HeartBeatSenderTask());

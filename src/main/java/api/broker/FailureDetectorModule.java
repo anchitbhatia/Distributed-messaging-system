@@ -34,7 +34,7 @@ public class FailureDetectorModule {
         public void run() {
             LOGGER.info("Detecting failures");
             Map<Integer, Long> receiveTimes = broker.heartBeatModule.getHeartBeatReceiveTimes();
-            LOGGER.info("Receive times: " + receiveTimes);
+//            LOGGER.info("Receive times: " + receiveTimes);
             boolean failureDetected = false;
             if (receiveTimes!=null) {
                 for (Map.Entry<Integer, Long> entry : receiveTimes.entrySet()) {
@@ -43,14 +43,17 @@ public class FailureDetectorModule {
                     long difference = TimeUnit.MILLISECONDS.convert(System.nanoTime() - time, TimeUnit.NANOSECONDS);
                     if (difference > Constants.FAILURE_TIMEOUT) {
                         failureDetected = true;
+                        LOGGER.debug("Difference is " + difference);
+                        broker.removeMember(id);
                         if (id == broker.leader.getId()) {
                             LOGGER.error("Leader " + id + " seems to be failed");
+                            broker.initiateElection();
                         }
                         else {
                             LOGGER.error("Broker " + id + " seems to be failed");
                         }
 //                        LOGGER.error("Time difference is " + difference);
-                        broker.removeMember(id);
+//                        broker.removeMember(id);
                     }
                 }
             }
