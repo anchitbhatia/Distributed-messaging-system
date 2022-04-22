@@ -20,6 +20,7 @@ import utils.*;
 
 import java.io.*;
 import java.util.Objects;
+import java.util.Scanner;
 
 /***
  * Application class
@@ -42,10 +43,12 @@ public class DistributedPubSubApplication {
                 LOGGER.info("Request accepted by leader");
                 try (BufferedReader br = new BufferedReader(new FileReader(file))) {
                     String line;
+                    Scanner input = new Scanner(System.in);
                     while ((line = br.readLine()) != null) {
+                        input.next();
                         LOGGER.info("Publishing, data: " + line);
                         producer.send(topic, line.getBytes());
-                        Thread.sleep(3000);
+                        Thread.sleep(1000);
                     }
                 } catch (ConnectionException e) {
                     LOGGER.info("Unable to publish, connection closed");

@@ -5,6 +5,7 @@ import configs.ApplicationConfig;
 import configs.BrokerConfig;
 import configs.ConsumerConfig;
 import configs.ProducerConfig;
+import messages.Node.NodeDetails;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
@@ -40,5 +41,17 @@ public class Helper {
         BufferedReader reader = new BufferedReader(new FileReader(file));
         Object config = gson.fromJson(reader, classType);
         return new ApplicationConfig(type, config);
+    }
+
+    public static NodeDetails getNodeDetailsObj(Node node) {
+        return NodeDetails.newBuilder().
+                setHostName(node.getHostName()).
+                setPort(node.getPort()).
+                setId(node.getId()).
+                build();
+    }
+
+    public static Node getNodeObj(NodeDetails node) {
+        return new Node(node.getHostName(), node.getPort(), node.getId());
     }
 }

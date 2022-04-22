@@ -19,28 +19,19 @@ public final class Leader {
       com.google.protobuf.MessageOrBuilder {
 
     /**
-     * <code>string hostName = 1;</code>
-     * @return The hostName.
+     * <code>.NodeDetails leader = 1;</code>
+     * @return Whether the leader field is set.
      */
-    java.lang.String getHostName();
+    boolean hasLeader();
     /**
-     * <code>string hostName = 1;</code>
-     * @return The bytes for hostName.
+     * <code>.NodeDetails leader = 1;</code>
+     * @return The leader.
      */
-    com.google.protobuf.ByteString
-        getHostNameBytes();
-
+    messages.Node.NodeDetails getLeader();
     /**
-     * <code>int32 port = 2;</code>
-     * @return The port.
+     * <code>.NodeDetails leader = 1;</code>
      */
-    int getPort();
-
-    /**
-     * <code>int32 id = 3;</code>
-     * @return The id.
-     */
-    int getId();
+    messages.Node.NodeDetailsOrBuilder getLeaderOrBuilder();
   }
   /**
    * Protobuf type {@code LeaderDetails}
@@ -55,7 +46,6 @@ public final class Leader {
       super(builder);
     }
     private LeaderDetails() {
-      hostName_ = "";
     }
 
     @java.lang.Override
@@ -89,19 +79,16 @@ public final class Leader {
               done = true;
               break;
             case 10: {
-              java.lang.String s = input.readStringRequireUtf8();
+              messages.Node.NodeDetails.Builder subBuilder = null;
+              if (leader_ != null) {
+                subBuilder = leader_.toBuilder();
+              }
+              leader_ = input.readMessage(messages.Node.NodeDetails.parser(), extensionRegistry);
+              if (subBuilder != null) {
+                subBuilder.mergeFrom(leader_);
+                leader_ = subBuilder.buildPartial();
+              }
 
-              hostName_ = s;
-              break;
-            }
-            case 16: {
-
-              port_ = input.readInt32();
-              break;
-            }
-            case 24: {
-
-              id_ = input.readInt32();
               break;
             }
             default: {
@@ -136,64 +123,30 @@ public final class Leader {
               messages.Leader.LeaderDetails.class, messages.Leader.LeaderDetails.Builder.class);
     }
 
-    public static final int HOSTNAME_FIELD_NUMBER = 1;
-    private volatile java.lang.Object hostName_;
+    public static final int LEADER_FIELD_NUMBER = 1;
+    private messages.Node.NodeDetails leader_;
     /**
-     * <code>string hostName = 1;</code>
-     * @return The hostName.
+     * <code>.NodeDetails leader = 1;</code>
+     * @return Whether the leader field is set.
      */
     @java.lang.Override
-    public java.lang.String getHostName() {
-      java.lang.Object ref = hostName_;
-      if (ref instanceof java.lang.String) {
-        return (java.lang.String) ref;
-      } else {
-        com.google.protobuf.ByteString bs = 
-            (com.google.protobuf.ByteString) ref;
-        java.lang.String s = bs.toStringUtf8();
-        hostName_ = s;
-        return s;
-      }
+    public boolean hasLeader() {
+      return leader_ != null;
     }
     /**
-     * <code>string hostName = 1;</code>
-     * @return The bytes for hostName.
+     * <code>.NodeDetails leader = 1;</code>
+     * @return The leader.
      */
     @java.lang.Override
-    public com.google.protobuf.ByteString
-        getHostNameBytes() {
-      java.lang.Object ref = hostName_;
-      if (ref instanceof java.lang.String) {
-        com.google.protobuf.ByteString b = 
-            com.google.protobuf.ByteString.copyFromUtf8(
-                (java.lang.String) ref);
-        hostName_ = b;
-        return b;
-      } else {
-        return (com.google.protobuf.ByteString) ref;
-      }
+    public messages.Node.NodeDetails getLeader() {
+      return leader_ == null ? messages.Node.NodeDetails.getDefaultInstance() : leader_;
     }
-
-    public static final int PORT_FIELD_NUMBER = 2;
-    private int port_;
     /**
-     * <code>int32 port = 2;</code>
-     * @return The port.
+     * <code>.NodeDetails leader = 1;</code>
      */
     @java.lang.Override
-    public int getPort() {
-      return port_;
-    }
-
-    public static final int ID_FIELD_NUMBER = 3;
-    private int id_;
-    /**
-     * <code>int32 id = 3;</code>
-     * @return The id.
-     */
-    @java.lang.Override
-    public int getId() {
-      return id_;
+    public messages.Node.NodeDetailsOrBuilder getLeaderOrBuilder() {
+      return getLeader();
     }
 
     private byte memoizedIsInitialized = -1;
@@ -210,14 +163,8 @@ public final class Leader {
     @java.lang.Override
     public void writeTo(com.google.protobuf.CodedOutputStream output)
                         throws java.io.IOException {
-      if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(hostName_)) {
-        com.google.protobuf.GeneratedMessageV3.writeString(output, 1, hostName_);
-      }
-      if (port_ != 0) {
-        output.writeInt32(2, port_);
-      }
-      if (id_ != 0) {
-        output.writeInt32(3, id_);
+      if (leader_ != null) {
+        output.writeMessage(1, getLeader());
       }
       unknownFields.writeTo(output);
     }
@@ -228,16 +175,9 @@ public final class Leader {
       if (size != -1) return size;
 
       size = 0;
-      if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(hostName_)) {
-        size += com.google.protobuf.GeneratedMessageV3.computeStringSize(1, hostName_);
-      }
-      if (port_ != 0) {
+      if (leader_ != null) {
         size += com.google.protobuf.CodedOutputStream
-          .computeInt32Size(2, port_);
-      }
-      if (id_ != 0) {
-        size += com.google.protobuf.CodedOutputStream
-          .computeInt32Size(3, id_);
+          .computeMessageSize(1, getLeader());
       }
       size += unknownFields.getSerializedSize();
       memoizedSize = size;
@@ -254,12 +194,11 @@ public final class Leader {
       }
       messages.Leader.LeaderDetails other = (messages.Leader.LeaderDetails) obj;
 
-      if (!getHostName()
-          .equals(other.getHostName())) return false;
-      if (getPort()
-          != other.getPort()) return false;
-      if (getId()
-          != other.getId()) return false;
+      if (hasLeader() != other.hasLeader()) return false;
+      if (hasLeader()) {
+        if (!getLeader()
+            .equals(other.getLeader())) return false;
+      }
       if (!unknownFields.equals(other.unknownFields)) return false;
       return true;
     }
@@ -271,12 +210,10 @@ public final class Leader {
       }
       int hash = 41;
       hash = (19 * hash) + getDescriptor().hashCode();
-      hash = (37 * hash) + HOSTNAME_FIELD_NUMBER;
-      hash = (53 * hash) + getHostName().hashCode();
-      hash = (37 * hash) + PORT_FIELD_NUMBER;
-      hash = (53 * hash) + getPort();
-      hash = (37 * hash) + ID_FIELD_NUMBER;
-      hash = (53 * hash) + getId();
+      if (hasLeader()) {
+        hash = (37 * hash) + LEADER_FIELD_NUMBER;
+        hash = (53 * hash) + getLeader().hashCode();
+      }
       hash = (29 * hash) + unknownFields.hashCode();
       memoizedHashCode = hash;
       return hash;
@@ -410,12 +347,12 @@ public final class Leader {
       @java.lang.Override
       public Builder clear() {
         super.clear();
-        hostName_ = "";
-
-        port_ = 0;
-
-        id_ = 0;
-
+        if (leaderBuilder_ == null) {
+          leader_ = null;
+        } else {
+          leader_ = null;
+          leaderBuilder_ = null;
+        }
         return this;
       }
 
@@ -442,9 +379,11 @@ public final class Leader {
       @java.lang.Override
       public messages.Leader.LeaderDetails buildPartial() {
         messages.Leader.LeaderDetails result = new messages.Leader.LeaderDetails(this);
-        result.hostName_ = hostName_;
-        result.port_ = port_;
-        result.id_ = id_;
+        if (leaderBuilder_ == null) {
+          result.leader_ = leader_;
+        } else {
+          result.leader_ = leaderBuilder_.build();
+        }
         onBuilt();
         return result;
       }
@@ -493,15 +432,8 @@ public final class Leader {
 
       public Builder mergeFrom(messages.Leader.LeaderDetails other) {
         if (other == messages.Leader.LeaderDetails.getDefaultInstance()) return this;
-        if (!other.getHostName().isEmpty()) {
-          hostName_ = other.hostName_;
-          onChanged();
-        }
-        if (other.getPort() != 0) {
-          setPort(other.getPort());
-        }
-        if (other.getId() != 0) {
-          setId(other.getId());
+        if (other.hasLeader()) {
+          mergeLeader(other.getLeader());
         }
         this.mergeUnknownFields(other.unknownFields);
         onChanged();
@@ -532,142 +464,123 @@ public final class Leader {
         return this;
       }
 
-      private java.lang.Object hostName_ = "";
+      private messages.Node.NodeDetails leader_;
+      private com.google.protobuf.SingleFieldBuilderV3<
+          messages.Node.NodeDetails, messages.Node.NodeDetails.Builder, messages.Node.NodeDetailsOrBuilder> leaderBuilder_;
       /**
-       * <code>string hostName = 1;</code>
-       * @return The hostName.
+       * <code>.NodeDetails leader = 1;</code>
+       * @return Whether the leader field is set.
        */
-      public java.lang.String getHostName() {
-        java.lang.Object ref = hostName_;
-        if (!(ref instanceof java.lang.String)) {
-          com.google.protobuf.ByteString bs =
-              (com.google.protobuf.ByteString) ref;
-          java.lang.String s = bs.toStringUtf8();
-          hostName_ = s;
-          return s;
+      public boolean hasLeader() {
+        return leaderBuilder_ != null || leader_ != null;
+      }
+      /**
+       * <code>.NodeDetails leader = 1;</code>
+       * @return The leader.
+       */
+      public messages.Node.NodeDetails getLeader() {
+        if (leaderBuilder_ == null) {
+          return leader_ == null ? messages.Node.NodeDetails.getDefaultInstance() : leader_;
         } else {
-          return (java.lang.String) ref;
+          return leaderBuilder_.getMessage();
         }
       }
       /**
-       * <code>string hostName = 1;</code>
-       * @return The bytes for hostName.
+       * <code>.NodeDetails leader = 1;</code>
        */
-      public com.google.protobuf.ByteString
-          getHostNameBytes() {
-        java.lang.Object ref = hostName_;
-        if (ref instanceof String) {
-          com.google.protobuf.ByteString b = 
-              com.google.protobuf.ByteString.copyFromUtf8(
-                  (java.lang.String) ref);
-          hostName_ = b;
-          return b;
+      public Builder setLeader(messages.Node.NodeDetails value) {
+        if (leaderBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          leader_ = value;
+          onChanged();
         } else {
-          return (com.google.protobuf.ByteString) ref;
+          leaderBuilder_.setMessage(value);
+        }
+
+        return this;
+      }
+      /**
+       * <code>.NodeDetails leader = 1;</code>
+       */
+      public Builder setLeader(
+          messages.Node.NodeDetails.Builder builderForValue) {
+        if (leaderBuilder_ == null) {
+          leader_ = builderForValue.build();
+          onChanged();
+        } else {
+          leaderBuilder_.setMessage(builderForValue.build());
+        }
+
+        return this;
+      }
+      /**
+       * <code>.NodeDetails leader = 1;</code>
+       */
+      public Builder mergeLeader(messages.Node.NodeDetails value) {
+        if (leaderBuilder_ == null) {
+          if (leader_ != null) {
+            leader_ =
+              messages.Node.NodeDetails.newBuilder(leader_).mergeFrom(value).buildPartial();
+          } else {
+            leader_ = value;
+          }
+          onChanged();
+        } else {
+          leaderBuilder_.mergeFrom(value);
+        }
+
+        return this;
+      }
+      /**
+       * <code>.NodeDetails leader = 1;</code>
+       */
+      public Builder clearLeader() {
+        if (leaderBuilder_ == null) {
+          leader_ = null;
+          onChanged();
+        } else {
+          leader_ = null;
+          leaderBuilder_ = null;
+        }
+
+        return this;
+      }
+      /**
+       * <code>.NodeDetails leader = 1;</code>
+       */
+      public messages.Node.NodeDetails.Builder getLeaderBuilder() {
+        
+        onChanged();
+        return getLeaderFieldBuilder().getBuilder();
+      }
+      /**
+       * <code>.NodeDetails leader = 1;</code>
+       */
+      public messages.Node.NodeDetailsOrBuilder getLeaderOrBuilder() {
+        if (leaderBuilder_ != null) {
+          return leaderBuilder_.getMessageOrBuilder();
+        } else {
+          return leader_ == null ?
+              messages.Node.NodeDetails.getDefaultInstance() : leader_;
         }
       }
       /**
-       * <code>string hostName = 1;</code>
-       * @param value The hostName to set.
-       * @return This builder for chaining.
+       * <code>.NodeDetails leader = 1;</code>
        */
-      public Builder setHostName(
-          java.lang.String value) {
-        if (value == null) {
-    throw new NullPointerException();
-  }
-  
-        hostName_ = value;
-        onChanged();
-        return this;
-      }
-      /**
-       * <code>string hostName = 1;</code>
-       * @return This builder for chaining.
-       */
-      public Builder clearHostName() {
-        
-        hostName_ = getDefaultInstance().getHostName();
-        onChanged();
-        return this;
-      }
-      /**
-       * <code>string hostName = 1;</code>
-       * @param value The bytes for hostName to set.
-       * @return This builder for chaining.
-       */
-      public Builder setHostNameBytes(
-          com.google.protobuf.ByteString value) {
-        if (value == null) {
-    throw new NullPointerException();
-  }
-  checkByteStringIsUtf8(value);
-        
-        hostName_ = value;
-        onChanged();
-        return this;
-      }
-
-      private int port_ ;
-      /**
-       * <code>int32 port = 2;</code>
-       * @return The port.
-       */
-      @java.lang.Override
-      public int getPort() {
-        return port_;
-      }
-      /**
-       * <code>int32 port = 2;</code>
-       * @param value The port to set.
-       * @return This builder for chaining.
-       */
-      public Builder setPort(int value) {
-        
-        port_ = value;
-        onChanged();
-        return this;
-      }
-      /**
-       * <code>int32 port = 2;</code>
-       * @return This builder for chaining.
-       */
-      public Builder clearPort() {
-        
-        port_ = 0;
-        onChanged();
-        return this;
-      }
-
-      private int id_ ;
-      /**
-       * <code>int32 id = 3;</code>
-       * @return The id.
-       */
-      @java.lang.Override
-      public int getId() {
-        return id_;
-      }
-      /**
-       * <code>int32 id = 3;</code>
-       * @param value The id to set.
-       * @return This builder for chaining.
-       */
-      public Builder setId(int value) {
-        
-        id_ = value;
-        onChanged();
-        return this;
-      }
-      /**
-       * <code>int32 id = 3;</code>
-       * @return This builder for chaining.
-       */
-      public Builder clearId() {
-        
-        id_ = 0;
-        onChanged();
-        return this;
+      private com.google.protobuf.SingleFieldBuilderV3<
+          messages.Node.NodeDetails, messages.Node.NodeDetails.Builder, messages.Node.NodeDetailsOrBuilder> 
+          getLeaderFieldBuilder() {
+        if (leaderBuilder_ == null) {
+          leaderBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
+              messages.Node.NodeDetails, messages.Node.NodeDetails.Builder, messages.Node.NodeDetailsOrBuilder>(
+                  getLeader(),
+                  getParentForChildren(),
+                  isClean());
+          leader_ = null;
+        }
+        return leaderBuilder_;
       }
       @java.lang.Override
       public final Builder setUnknownFields(
@@ -736,20 +649,22 @@ public final class Leader {
       descriptor;
   static {
     java.lang.String[] descriptorData = {
-      "\n\023protos/leader.proto\";\n\rLeaderDetails\022\020" +
-      "\n\010hostName\030\001 \001(\t\022\014\n\004port\030\002 \001(\005\022\n\n\002id\030\003 \001" +
-      "(\005B\022\n\010messagesB\006Leaderb\006proto3"
+      "\n\023protos/leader.proto\032\021protos/node.proto" +
+      "\"-\n\rLeaderDetails\022\034\n\006leader\030\001 \001(\0132\014.Node" +
+      "DetailsB\022\n\010messagesB\006Leaderb\006proto3"
     };
     descriptor = com.google.protobuf.Descriptors.FileDescriptor
       .internalBuildGeneratedFileFrom(descriptorData,
         new com.google.protobuf.Descriptors.FileDescriptor[] {
+          messages.Node.getDescriptor(),
         });
     internal_static_LeaderDetails_descriptor =
       getDescriptor().getMessageTypes().get(0);
     internal_static_LeaderDetails_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_LeaderDetails_descriptor,
-        new java.lang.String[] { "HostName", "Port", "Id", });
+        new java.lang.String[] { "Leader", });
+    messages.Node.getDescriptor();
   }
 
   // @@protoc_insertion_point(outer_class_scope)

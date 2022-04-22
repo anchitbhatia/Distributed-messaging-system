@@ -29,7 +29,8 @@ public class Constants {
     public static final String SYNC_RECEIVE = "receive";
 
     public static final int POLL_TIMEOUT = 2000;
-    public static final int HB_SCHEDULER_TIME = 2000;
+    public static final int HB_SCHEDULER_TIME = 500;
     public static final int FD_SCHEDULER_TIME = 5000;
-    public static final long FAILURE_TIMEOUT = 10000;
+    public static final long FAILURE_TIMEOUT = 20000;
+    public static final int ELEC_ACK_WAIT_TIME = 30000;
 }
